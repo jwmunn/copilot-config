@@ -6,15 +6,16 @@
   "user": {
     "alias": "jumunn",
     "email": "jumunn@microsoft.com",
-    "adoAssignee": "jumunn@microsoft.com"
+    "adoAssignee": "jumunn@microsoft.com",
+    "adoAreaPath": "Engineering\\POD\\Xinxin-OctoPod"
   },
 
   "azureDevOps": {
     "organization": "https://dev.azure.com/ceapex",
     "project": "Engineering",
-    "areaPath": "Engineering\\POD\\Xinxin-OctoPod",
-    "iteration": "Engineering\\POD\\Xinxin-OctoPod",
-    "boardUrl": "https://dev.azure.com/ceapex/Engineering/_boards/board/t/Xinxin-OctoPod/Backlog%20items",
+    "areaPath": "{adoAreaPath}",
+    "iteration": "{adoAreaPath}",
+    "boardUrl": "https://dev.azure.com/ceapex/Engineering/_boards/board/t/{adoAreaPath}/Backlog%20items",
     "workItemUrl": "https://dev.azure.com/ceapex/Engineering/_workitems/edit/{id}",
     "prUrlPattern": "https://dev.azure.com/ceapex/Engineering/_git/{repo}/pullrequest/{id}",
     "sweAssignee": "66dda6c5-07d0-4484-9979-116241219397@72f988bf-86f1-41af-91ab-2d7cd011db47"
