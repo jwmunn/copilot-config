@@ -1,3 +1,4 @@
 {
-  "markdown.styles": ["c:/repos/mslearn/copilot-config/.vscode/global-markdown.css"]
+  "markdown.styles": ["c:/repos/mslearn/copilot-config/.vscode/global-markdown.css"],
+  "explorer.excludeGitIgnore": false
 }
