@@ -3,106 +3,93 @@ import * as path from 'path';
 import * as yaml from 'yaml';
 
 export interface AgentDefinition {
-    name: string;
-    description: string;
-    tools: string[];
-    content: string;
-    filePath: string;
+	name: string;
+	description: string;
+	tools: string[];
+	content: string;
+	filePath: string;
 }
 
 export class AgentParser {
-    private agentsDir: string;
+	constructor(private agentsDir: string) {}
 
-    constructor(configDir: string = '') {
-        // Default to looking for agents relative to the extension
-        this.agentsDir = configDir || path.join(__dirname, '..', '..', '.github', 'agents');
-    }
+	/**
+	 * Parse YAML frontmatter from a chatagent/markdown file
+	 */
+	private parseFrontmatter(raw: string): { frontmatter: Record<string, unknown>; body: string } {
+		const lines = raw.split('\n');
 
-    /**
-     * Parse frontmatter from markdown content
-     */
-    private parseFrontmatter(content: string): { frontmatter: any; content: string } {
-        const lines = content.split('\n');
-        
-        // Check if the file starts with frontmatter delimiter
-        if (lines[0].trim() !== '---') {
-            return { frontmatter: {}, content };
-        }
+		// Skip optional code fence like ```chatagent
+		let start = 0;
+		if (/^```/.test(lines[0].trim())) {
+			start = 1;
+		}
 
-        // Find the end of frontmatter
-        let endIndex = -1;
-        for (let i = 1; i < lines.length; i++) {
-            if (lines[i].trim() === '---') {
-                endIndex = i;
-                break;
-            }
-        }
+		if (lines[start]?.trim() !== '---') {
+			return { frontmatter: {}, body: raw };
+		}
 
-        if (endIndex === -1) {
-            return { frontmatter: {}, content };
-        }
+		let endIndex = -1;
+		for (let i = start + 1; i < lines.length; i++) {
+			if (lines[i].trim() === '---') {
+				endIndex = i;
+				break;
+			}
+		}
 
-        // Extract and parse frontmatter
-        const frontmatterText = lines.slice(1, endIndex).join('\n');
-        const markdownContent = lines.slice(endIndex + 1).join('\n');
+		if (endIndex === -1) {
+			return { frontmatter: {}, body: raw };
+		}
 
-        let frontmatter = {};
-        try {
-            frontmatter = yaml.parse(frontmatterText) || {};
-        } catch (error) {
-            console.error(`Error parsing frontmatter: ${error}`);
-        }
+		const fmText = lines.slice(start + 1, endIndex).join('\n');
+		const body = lines.slice(endIndex + 1).join('\n');
 
-        return { frontmatter, content: markdownContent };
-    }
+		try {
+			return { frontmatter: (yaml.parse(fmText) as Record<string, unknown>) ?? {}, body };
+		} catch {
+			return { frontmatter: {}, body: raw };
+		}
+	}
 
-    /**
-     * Load all agent definitions from the agents directory
-     */
-    public loadAgents(): AgentDefinition[] {
-        const agents: AgentDefinition[] = [];
+	/**
+	 * Load all agent definitions from the agents directory
+	 */
+	public loadAgents(): AgentDefinition[] {
+		const agents: AgentDefinition[] = [];
 
-        if (!fs.existsSync(this.agentsDir)) {
-            console.warn(`Agents directory not found: ${this.agentsDir}`);
-            return agents;
-        }
+		if (!fs.existsSync(this.agentsDir)) {
+			console.warn(`Agents directory not found: ${this.agentsDir}`);
+			return agents;
+		}
 
-        const files = fs.readdirSync(this.agentsDir);
-        
-        for (const file of files) {
-            if (!file.endsWith('.agent.md')) {
-                continue;
-            }
+		for (const file of fs.readdirSync(this.agentsDir)) {
+			if (!file.endsWith('.agent.md')) {
+				continue;
+			}
 
-            const filePath = path.join(this.agentsDir, file);
-            
-            try {
-                const content = fs.readFileSync(filePath, 'utf-8');
-                const { frontmatter, content: markdownContent } = this.parseFrontmatter(content);
+			const filePath = path.join(this.agentsDir, file);
 
-                if (frontmatter.name && frontmatter.description) {
-                    agents.push({
-                        name: frontmatter.name,
-                        description: frontmatter.description,
-                        tools: frontmatter.tools || [],
-                        content: markdownContent,
-                        filePath
-                    });
-                } else {
-                    console.warn(`Agent file missing required frontmatter: ${file}`);
-                }
-            } catch (error) {
-                console.error(`Error loading agent file ${file}: ${error}`);
-            }
-        }
+			try {
+				const raw = fs.readFileSync(filePath, 'utf-8');
+				const { frontmatter, body } = this.parseFrontmatter(raw);
 
-        return agents;
-    }
+				const name = frontmatter.name as string | undefined;
+				const description = frontmatter.description as string | undefined;
 
-    /**
-     * Update the agents directory path
-     */
-    public setAgentsDir(dir: string): void {
-        this.agentsDir = dir;
-    }
+				if (name && description) {
+					agents.push({
+						name,
+						description,
+						tools: (frontmatter.tools as string[]) ?? [],
+						content: body,
+						filePath,
+					});
+				}
+			} catch (err) {
+				console.error(`Error loading agent file ${file}:`, err);
+			}
+		}
+
+		return agents;
+	}
 }

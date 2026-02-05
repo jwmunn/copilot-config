@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+out/
+dist/
+
+# Extension packages
+*.vsix
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode-test/
+
+# Runtime
+.env

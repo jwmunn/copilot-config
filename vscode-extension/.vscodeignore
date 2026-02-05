@@ -10,3 +10,4 @@ tsconfig.json
 .eslintrc.json
 **/*.map
 **/*.ts
+!out/**/*.js

@@ -1,147 +1,184 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { AgentParser } from './agentParser';
-import { ChatParticipantManager } from './chatParticipants';
+import * as fs from 'fs';
+import { AgentParser, AgentDefinition } from './agentParser';
 
-let participantManager: ChatParticipantManager;
+// Agent IDs that match package.json chatParticipants
+const AGENT_PARTICIPANT_IDS = [
+	'mslearn-research',
+	'mslearn-planning',
+	'mslearn-implementation',
+	'mslearn-code-review',
+	'mslearn-test',
+];
 
+let participants: vscode.Disposable[] = [];
+let loadedAgents: AgentDefinition[] = [];
+
+// ── Activation ────────────────────────────────────────────────────────────────
 export function activate(context: vscode.ExtensionContext) {
-    console.log('MSLearn Copilot Agents extension is now active');
+	console.log('MSLearn Copilot Agents extension activating…');
 
-    // Initialize the participant manager
-    participantManager = new ChatParticipantManager();
+	loadAndRegister(context);
 
-    // Load and register agents
-    loadAndRegisterAgents(context);
+	context.subscriptions.push(
+		vscode.commands.registerCommand('mslearn-copilot-agents.reload', () =>
+			loadAndRegister(context)
+		),
+		vscode.commands.registerCommand('mslearn-copilot-agents.showInfo', showAgentsInfo)
+	);
 
-    // Register command to reload agents
-    const reloadCommand = vscode.commands.registerCommand(
-        'mslearn-copilot-agents.reload',
-        () => loadAndRegisterAgents(context)
-    );
-
-    // Register command to show agents info
-    const showAgentsCommand = vscode.commands.registerCommand(
-        'mslearn-copilot-agents.showInfo',
-        showAgentsInfo
-    );
-
-    context.subscriptions.push(reloadCommand, showAgentsCommand);
-
-    // Watch for changes to agent files
-    watchAgentFiles(context);
+	// Hot-reload when agent files change
+	const agentsDir = findAgentsDirectory();
+	if (agentsDir) {
+		const watcher = vscode.workspace.createFileSystemWatcher(
+			new vscode.RelativePattern(vscode.Uri.file(agentsDir), '*.agent.md')
+		);
+		watcher.onDidChange(() => loadAndRegister(context));
+		watcher.onDidCreate(() => loadAndRegister(context));
+		watcher.onDidDelete(() => loadAndRegister(context));
+		context.subscriptions.push(watcher);
+	}
 }
 
 export function deactivate() {
-    if (participantManager) {
-        participantManager.dispose();
-    }
+	disposeParticipants();
 }
 
-function loadAndRegisterAgents(context: vscode.ExtensionContext) {
-    try {
-        // Try to find the agents directory
-        const agentsDir = findAgentsDirectory(context);
-        
-        if (!agentsDir) {
-            vscode.window.showWarningMessage(
-                'MSLearn Copilot Agents: Could not find agents directory. Please ensure the extension is in a workspace with copilot-config.'
-            );
-            return;
-        }
+// ── Core logic ────────────────────────────────────────────────────────────────
+function loadAndRegister(context: vscode.ExtensionContext) {
+	disposeParticipants();
 
-        // Load agents
-        const parser = new AgentParser(agentsDir);
-        const agents = parser.loadAgents();
+	const agentsDir = findAgentsDirectory();
 
-        if (agents.length === 0) {
-            vscode.window.showInformationMessage('No agent files found in the copilot-config directory.');
-            return;
-        }
+	if (!agentsDir) {
+		console.log('MSLearn Copilot Agents: agents directory not found.');
+		return;
+	}
 
-        // Register agents as chat participants
-        participantManager.registerAgents(agents);
+	const parser = new AgentParser(agentsDir);
+	loadedAgents = parser.loadAgents();
 
-        vscode.window.showInformationMessage(
-            `MSLearn Copilot Agents: Loaded ${agents.length} agents (${agents.map(a => '@' + a.name).join(', ')})`
-        );
+	if (loadedAgents.length === 0) {
+		console.log('MSLearn Copilot Agents: no .agent.md files found.');
+		return;
+	}
 
-    } catch (error) {
-        console.error('Error loading agents:', error);
-        vscode.window.showErrorMessage(
-            `MSLearn Copilot Agents: Error loading agents - ${error instanceof Error ? error.message : 'Unknown error'}`
-        );
-    }
+	// Register agent participants only
+	for (const agent of loadedAgents) {
+		if (!AGENT_PARTICIPANT_IDS.includes(agent.name)) {
+			continue;
+		}
+
+		const handler: vscode.ChatRequestHandler = async (request, chatContext, stream, token) => {
+			return handleAgentRequest(agent, request, chatContext, stream, token);
+		};
+
+		const participant = vscode.chat.createChatParticipant(agent.name, handler);
+		participant.iconPath = vscode.Uri.joinPath(context.extensionUri, 'icon.png');
+
+		participants.push(participant);
+		console.log(`Registered @${agent.name}`);
+	}
+
+	console.log(`MSLearn: ${participants.length} agents loaded.`);
 }
 
-function findAgentsDirectory(context: vscode.ExtensionContext): string | null {
-    // Look for agents directory in workspace folders
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    
-    if (workspaceFolders) {
-        for (const folder of workspaceFolders) {
-            const possiblePaths = [
-                path.join(folder.uri.fsPath, 'copilot-config', '.github', 'agents'),
-                path.join(folder.uri.fsPath, '.github', 'agents'),
-                path.join(folder.uri.fsPath, '..', 'copilot-config', '.github', 'agents')
-            ];
-            
-            for (const possiblePath of possiblePaths) {
-                try {
-                    const fs = require('fs');
-                    if (fs.existsSync(possiblePath)) {
-                        console.log(`Found agents directory: ${possiblePath}`);
-                        return possiblePath;
-                    }
-                } catch (error) {
-                    // Continue searching
-                }
-            }
-        }
-    }
+// ── Agent handler ─────────────────────────────────────────────────────────────
+async function handleAgentRequest(
+	agent: AgentDefinition,
+	request: vscode.ChatRequest,
+	chatContext: vscode.ChatContext,
+	stream: vscode.ChatResponseStream,
+	token: vscode.CancellationToken
+): Promise<vscode.ChatResult> {
+	try {
+		const systemPrompt = [
+			`You are the "${agent.name}" agent. ${agent.description}`,
+			'',
+			agent.content,
+		].join('\n');
 
-    return null;
+		const messages: vscode.LanguageModelChatMessage[] = [
+			vscode.LanguageModelChatMessage.User(systemPrompt),
+		];
+
+		for (const turn of chatContext.history) {
+			if (turn instanceof vscode.ChatRequestTurn) {
+				messages.push(vscode.LanguageModelChatMessage.User(turn.prompt));
+			} else if (turn instanceof vscode.ChatResponseTurn) {
+				let text = '';
+				for (const part of turn.response) {
+					if (part instanceof vscode.ChatResponseMarkdownPart) {
+						text += part.value.value;
+					}
+				}
+				if (text) {
+					messages.push(vscode.LanguageModelChatMessage.Assistant(text));
+				}
+			}
+		}
+
+		messages.push(vscode.LanguageModelChatMessage.User(request.prompt));
+
+		const chatResponse = await request.model.sendRequest(messages, {}, token);
+
+		for await (const fragment of chatResponse.text) {
+			if (token.isCancellationRequested) {
+				break;
+			}
+			stream.markdown(fragment);
+		}
+
+		return {};
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : String(err);
+		stream.markdown(`\n\n**Error:** ${msg}`);
+		return { errorDetails: { message: msg } };
+	}
 }
 
-function watchAgentFiles(context: vscode.ExtensionContext) {
-    const agentsDir = findAgentsDirectory(context);
-    if (!agentsDir) {
-        return;
-    }
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function findAgentsDirectory(): string | null {
+	const folders = vscode.workspace.workspaceFolders;
+	if (!folders) {
+		return null;
+	}
 
-    // Watch for changes to agent files
-    const watcher = vscode.workspace.createFileSystemWatcher(
-        new vscode.RelativePattern(agentsDir, '*.agent.md')
-    );
+	const candidates = folders.flatMap(f => [
+		path.join(f.uri.fsPath, '.github', 'agents'),
+		path.join(f.uri.fsPath, 'copilot-config', '.github', 'agents'),
+	]);
 
-    watcher.onDidCreate(() => {
-        console.log('Agent file created, reloading...');
-        loadAndRegisterAgents(context);
-    });
+	for (const f of folders) {
+		const sibling = path.join(f.uri.fsPath, '..', 'copilot-config', '.github', 'agents');
+		candidates.push(path.resolve(sibling));
+	}
 
-    watcher.onDidChange(() => {
-        console.log('Agent file changed, reloading...');
-        loadAndRegisterAgents(context);
-    });
+	for (const candidate of candidates) {
+		if (fs.existsSync(candidate)) {
+			return candidate;
+		}
+	}
 
-    watcher.onDidDelete(() => {
-        console.log('Agent file deleted, reloading...');
-        loadAndRegisterAgents(context);
-    });
-
-    context.subscriptions.push(watcher);
+	return null;
 }
 
 function showAgentsInfo() {
-    const agentParser = new AgentParser();
-    const agents = agentParser.loadAgents();
-    
-    const info = agents.map(agent => 
-        `**@${agent.name}**: ${agent.description}`
-    ).join('\\n\\n');
-    
-    vscode.window.showInformationMessage(
-        `Available MSLearn Agents:\\n\\n${info}`,
-        { modal: true, detail: 'Use @agent-name in the chat to invoke any of these agents.' }
-    );
+	const agentLines = loadedAgents
+		.filter(a => AGENT_PARTICIPANT_IDS.includes(a.name))
+		.map(a => `@${a.name}`);
+
+	const message = agentLines.length
+		? `Agents: ${agentLines.join(', ')}\n\nPrompts: Use /mslearn-* (native VS Code)`
+		: 'No agents loaded.';
+
+	vscode.window.showInformationMessage(message);
+}
+
+function disposeParticipants() {
+	for (const p of participants) {
+		p.dispose();
+	}
+	participants = [];
 }
