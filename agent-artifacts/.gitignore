@@ -1,0 +1,15 @@
+# Agent artifacts are local working files, not committed to git
+# These are used for agent-to-agent handoffs and user refinement
+
+# Ignore all artifact files but keep directory structure
+research/*
+!research/.gitkeep
+
+plans/*
+!plans/.gitkeep
+
+handoffs/*
+!handoffs/.gitkeep
+
+reviews/*
+!reviews/.gitkeep

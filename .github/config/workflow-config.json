@@ -1,0 +1,97 @@
+{
+  "$schema": "./workflow-config.schema.json",
+  "version": "1.0.0",
+  "description": "Central configuration for GitHub Copilot workflow automation",
+
+  "user": {
+    "alias": "${USER_ALIAS}",
+    "email": "${USER_EMAIL}",
+    "adoAssignee": "${ADO_ASSIGNEE}",
+    "adoAreaPath": "${ADO_AREA_PATH}"
+  },
+
+  "azureDevOps": {
+    "organization": "${ADO_ORGANIZATION}",
+    "project": "${ADO_PROJECT}",
+    "areaPath": "{adoAreaPath}",
+    "iteration": "{adoAreaPath}",
+    "boardUrl": "${ADO_ORGANIZATION}/${ADO_PROJECT}/_boards/board/t/{adoAreaPath}/Backlog%20items",
+    "workItemUrl": "${ADO_ORGANIZATION}/${ADO_PROJECT}/_workitems/edit/{id}",
+    "prUrlPattern": "${ADO_ORGANIZATION}/${ADO_PROJECT}/_git/{repo}/pullrequest/{id}",
+    "sweAssignee": "${ADO_SWE_ASSIGNEE}"
+  },
+
+  "git": {
+    "defaultBranch": "main",
+    "branchNamingPattern": "{alias}/{description}",
+    "prTemplateLocation": ".azuredevops/pull_request_template.md",
+    "worktreeLocation": "sibling",
+    "worktreeNamingPattern": "{repoName}-wt-{worktreeName}"
+  },
+
+  "repositories": {
+    "docs-ui": {
+      "defaultBranch": "develop",
+      "preCommitCommand": "npx wireit betterer precommit --cache",
+      "buildCommand": "npm run build",
+      "testCommand": "npm test",
+      "previewUrlPattern": "https://ppe.preview.learn.microsoft-int.com/?pr={PrNumber}",
+      "type": "typescript-ux",
+      "aliases": ["docs-ui", "Docs.UI"]
+    },
+    "Learn.SharedComponents": {
+      "defaultBranch": "main",
+      "preCommitCommand": "npm run clean && npm run components:build && npm run app:build",
+      "buildCommand": "npm run components:build && npm run app:build",
+      "testCommand": "npm test",
+      "previewUrlPattern": "https://shared-components.preview.learn.microsoft-int.com/?pr={PrNumber}",
+      "type": "typescript-ux",
+      "aliases": ["feature-gap-wt", "learn-react-components"]
+    },
+    "Docs.ContentService": {
+      "defaultBranch": "main",
+      "preCommitCommand": "dotnet build",
+      "buildCommand": "dotnet build",
+      "testCommand": "dotnet test",
+      "previewUrlPattern": null,
+      "type": "csharp-service",
+      "aliases": ["ContentService"]
+    },
+    "Learn.Rendering.Preview": {
+      "defaultBranch": "main",
+      "preCommitCommand": "dotnet build",
+      "buildCommand": "dotnet build",
+      "testCommand": "dotnet test",
+      "previewUrlPattern": null,
+      "type": "deployment",
+      "aliases": ["rendering-preview"]
+    }
+  },
+
+  "artifacts": {
+    "baseDir": "agent-artifacts",
+    "subdirectories": {
+      "research": "research",
+      "plans": "plans",
+      "handoffs": "handoffs",
+      "reviews": "reviews"
+    },
+    "filenamePatterns": {
+      "research": "{date}-{ticketId}-{description}.md",
+      "plan": "{date}-{ticketId}-{description}-plan.md",
+      "handoff": "{date}_{time}_{ticketId}_{description}.md",
+      "review": "{date}-{prNumber}-{description}-review.md"
+    }
+  },
+
+  "qualityGates": {
+    "preCommit": {
+      "enabled": true,
+      "checks": ["build", "lint", "typecheck"]
+    },
+    "preBranch": {
+      "enabled": true,
+      "checks": ["uncommittedChanges"]
+    }
+  }
+}
