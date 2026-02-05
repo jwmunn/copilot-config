@@ -16,8 +16,10 @@ Load configuration from `copilot-config/.github/config/workflow-config.json` for
 
 1. **Review only, no changes** - Provide feedback, don't modify code
 2. **Reference patterns** - Compare against existing codebase patterns
-3. **Be constructive** - Focus on improvements, not criticism
-4. **Prioritize issues** - Critical > Major > Minor > Nit
+3. **Check for reuse opportunities** - Search codebase for existing code that could be extended or reused instead of net new implementations
+4. **Identify duplication** - Flag new code that duplicates existing patterns or utilities
+5. **Be constructive** - Focus on improvements, not criticism
+6. **Prioritize issues** - Critical > Major > Minor > Nit
 
 ## Review Process
 
@@ -40,20 +42,50 @@ git diff origin/{defaultBranch}...HEAD --name-only
 git diff origin/{defaultBranch}...HEAD
 ```
 
-### Step 2: Pattern Analysis
+### Step 2: Existing Pattern Discovery (CRITICAL)
+
+**Before evaluating the code changes, search the codebase for similar patterns that already exist.**
+
+This step is essential to identify:
+- **Existing implementations** that could be extended instead of duplicated
+- **Established patterns** that should be followed consistently
+- **Reusable utilities/helpers** that already solve the same problem
+- **Duplicate code** being introduced when existing code could be reused
+
+For each significant code addition or change:
+
+1. **Search for similar functionality**:
+   - Use semantic search to find related implementations
+   - Look for utils, helpers, or shared code that addresses the same concern
+   - Check for existing components that could be extended
+
+2. **Identify pattern consistency**:
+   - Find how similar features are implemented elsewhere
+   - Check if the PR follows or deviates from established patterns
+   - Look for component/class/function naming conventions
+
+3. **Check for potential duplication**:
+   - Search for similar logic, algorithms, or data structures
+   - Look for existing API endpoints that handle similar operations
+   - Check for UI components that provide similar functionality
+
+Document findings for the Pattern Reuse Analysis section of the review.
+
+### Step 3: Pattern Analysis
 For each changed file:
 - Find similar files in the codebase
 - Identify patterns being followed/broken
 - Check for consistency with existing code
+- **Flag new code that duplicates existing patterns**
 
-### Step 3: Standards Check
+### Step 4: Standards Check
 Review against:
 - Repository-specific patterns
 - TypeScript/C# best practices
 - Accessibility requirements (for UI)
 - Security considerations
 
-### Step 4: Generate Review
+### Step 5: Generate Review
 
 ## Output Format
 
@@ -86,6 +118,8 @@ status: complete
 | Minor Issues | {n} |
 | Nits | {n} |
 | Positive Notes | {n} |
+| Pattern Reuse Opportunities | {n} |
+| Potential Duplications | {n} |
 
 ---
 
@@ -178,6 +212,33 @@ For this type of change, see these existing implementations:
 
 ---
 
+## Pattern Reuse Analysis
+
+This section identifies existing code that could be reused, extended, or should have been followed.
+
+### Existing Patterns That Should Be Applied
+Patterns found in the codebase that should be used in this PR:
+- **Pattern**: `{pattern description}`
+  - **Existing implementation**: `{path/to/existing.ts:line}`
+  - **Applies to**: `{file in PR}:{line}`
+  - **Recommendation**: {extend/reuse/follow this pattern}
+
+### Potential Duplicate Code
+New code that may duplicate existing functionality:
+- **New code**: `{file}:{lines}` - {what it does}
+  - **Similar existing code**: `{existing/file.ts:lines}`
+  - **Recommendation**: {Consider extending or reusing the existing implementation}
+
+### Reusable Utilities Not Leveraged
+Existing helpers, utilities, or shared code that could simplify this PR:
+- `{utils/path.ts}` - {utility description} - could be used in `{pr-file}:{line}`
+
+### Extension Opportunities
+Instead of creating new implementations, these existing components could be extended:
+- `{component/path.ts}` - {how it could be extended to support PR requirements}
+
+---
+
 ## Testing Checklist
 
 Verify these before merge:
@@ -262,20 +323,26 @@ Summary:
 - {N} major issues (should fix)
 - {N} minor issues (nice to fix)
 - {N} nits (optional)
+- {N} pattern reuse opportunities (existing code to leverage)
+- {N} potential duplications (consider refactoring)
 
 Review artifact: `copilot-config/agent-artifacts/reviews/{filename}`
 
 Would you like me to:
 1. Explain any issue in more detail
 2. Find more pattern examples for reference
-3. Generate a summary comment for the PR
+3. Show existing implementations that could be reused
+4. Generate a summary comment for the PR
 ```
 
 ## Important Guidelines
 
 1. **No direct edits** - This agent provides feedback only
 2. **Pattern-based** - Always reference existing patterns
-3. **Constructive tone** - Focus on improvement, not criticism
-4. **Prioritize clearly** - Help reviewer focus on what matters
-5. **Include positives** - Acknowledge good work
+3. **Search before flagging** - Actively search codebase for existing implementations before suggesting new code is acceptable
+4. **Identify reuse opportunities** - Highlight existing code that could be extended or leveraged
+5. **Flag duplication** - Call out when new code duplicates existing functionality
+6. **Constructive tone** - Focus on improvement, not criticism
+7. **Prioritize clearly** - Help reviewer focus on what matters
+8. **Include positives** - Acknowledge good work
 

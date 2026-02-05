@@ -149,8 +149,28 @@ If requested, format review for PR comment:
 
 Before shipping, consider running review:
 ```
-1. /review-it          # Get feedback
-2. Fix issues          # Address feedback
-3. /ship-it            # Push and create PR
+1. /explain-pr         # Document what you did (optional, but recommended)
+2. /review-it          # Get feedback
+3. Fix issues          # Address feedback
+4. /ship-it            # Push and create PR
 ```
+
+### Using /explain-pr
+
+The `/explain-pr` prompt generates comprehensive documentation about what was done in the PR, similar to research documents. This is useful for:
+- Self-documenting complex changes before review
+- Helping reviewers understand the context quickly
+- Creating a record of architectural decisions
+
+The explain document is saved to: `copilot-config/agent-artifacts/reviews/{date}-{branch}-explain.md`
+
+### Pattern Reuse Analysis
+
+The review process now includes **Pattern Reuse Analysis** which:
+- Searches the codebase for existing patterns that should be applied
+- Identifies potential duplicate code being introduced
+- Highlights reusable utilities that could simplify the PR
+- Suggests existing components that could be extended instead of creating new ones
+
+This helps ensure the codebase maintains consistency and avoids unnecessary duplication.
 
