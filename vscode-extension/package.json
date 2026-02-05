@@ -1,0 +1,40 @@
+{
+  "name": "mslearn-copilot-agents",
+  "displayName": "MSLearn Copilot Agents",
+  "description": "Local VS Code extension for MSLearn GitHub Copilot agents",
+  "version": "0.1.0",
+  "publisher": "mslearn",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "AI",
+    "Chat"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "chatParticipants": []
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "prepackage": "npm run compile",
+    "package": "vsce package",
+    "install-local": "code --install-extension mslearn-copilot-agents-0.1.0.vsix"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.90.0",
+    "@types/node": "20.x",
+    "typescript": "^5.4.5",
+    "vsce": "^2.15.0",
+    "@vscode/vsce": "^2.26.0"
+  },
+  "dependencies": {
+    "yaml": "^2.4.1",
+    "@types/yaml": "^1.9.7"
+  }
+}
