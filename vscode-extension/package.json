@@ -1,7 +1,7 @@
 {
   "name": "mslearn-copilot-agents",
   "displayName": "MSLearn Copilot Agents",
-  "description": "Local VS Code extension for MSLearn GitHub Copilot agents",
+  "description": "Local VS Code extension that registers MSLearn GitHub Copilot agents as chat participants, enabling @agent-name usage in VS Code Chat."
   "version": "0.1.0",
   "publisher": "mslearn",
   "engines": {
@@ -16,25 +16,64 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "chatParticipants": []
+    "chatParticipants": [
+      {
+        "id": "mslearn-research",
+        "name": "mslearn-research",
+        "description": "Deep research agent for understanding codebases, documenting systems, and determining feature requirements.",
+        "isSticky": true
+      },
+      {
+        "id": "mslearn-planning",
+        "name": "mslearn-planning",
+        "description": "Creates detailed implementation plans from research artifacts or feature descriptions.",
+        "isSticky": true
+      },
+      {
+        "id": "mslearn-implementation",
+        "name": "mslearn-implementation",
+        "description": "Implementation agent for writing code based on plans.",
+        "isSticky": true
+      },
+      {
+        "id": "mslearn-code-review",
+        "name": "mslearn-code-review",
+        "description": "Code review agent for analyzing code quality and standards.",
+        "isSticky": true
+      },
+      {
+        "id": "mslearn-test",
+        "name": "mslearn-test",
+        "description": "Testing agent for test strategy and generation.",
+        "isSticky": true
+      }
+    ],
+    "commands": [
+      {
+        "command": "mslearn-copilot-agents.reload",
+        "title": "MSLearn: Reload Agents"
+      },
+      {
+        "command": "mslearn-copilot-agents.showInfo",
+        "title": "MSLearn: Show Agents Info"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "prepackage": "npm run compile",
-    "package": "vsce package",
+    "package": "npx @vscode/vsce package --allow-missing-repository"
     "install-local": "code --install-extension mslearn-copilot-agents-0.1.0.vsix"
   },
   "devDependencies": {
     "@types/vscode": "^1.90.0",
     "@types/node": "20.x",
     "typescript": "^5.4.5",
-    "vsce": "^2.15.0",
     "@vscode/vsce": "^2.26.0"
   },
   "dependencies": {
-    "yaml": "^2.4.1",
-    "@types/yaml": "^1.9.7"
+    "yaml": "^2.4.1"
   }
 }
