@@ -20,37 +20,37 @@ This document describes the GitHub Copilot workflow automation system for the Mi
 copilot-config/
 ├── .github/
 │   ├── agents/                          # Autonomous agents
-│   │   ├── research.agent.md            # Deep codebase research
-│   │   ├── planning.agent.md            # Create implementation plans
-│   │   ├── implementation.agent.md      # Implement features
-│   │   ├── code-review.agent.md         # Review PRs
-│   │   ├── multi-agent-startup.agent.md # Parallel work coordination
-│   │   ├── codebase-analyzer.agent.md   # Analyze implementation details
-│   │   ├── codebase-locator.agent.md    # Find files and components
-│   │   ├── codebase-pattern-finder.agent.md # Find code patterns
-│   │   ├── thoughts-analyzer.agent.md   # Analyze research documents
-│   │   ├── thoughts-locator.agent.md    # Find research documents
-│   │   └── web-search-researcher.agent.md # Web research
+│   │   ├── mslearn-research.agent.md            # Deep codebase research
+│   │   ├── mslearn-planning.agent.md            # Create implementation plans
+│   │   ├── mslearn-implementation.agent.md      # Implement features
+│   │   ├── mslearn-code-review.agent.md         # Review PRs
+│   │   ├── mslearn-multi-agent-startup.agent.md # Parallel work coordination
+│   │   ├── mslearn-codebase-analyzer.agent.md   # Analyze implementation details
+│   │   ├── mslearn-codebase-locator.agent.md    # Find files and components
+│   │   ├── mslearn-codebase-pattern-finder.agent.md # Find code patterns
+│   │   ├── mslearn-thoughts-analyzer.agent.md   # Analyze research documents
+│   │   ├── mslearn-thoughts-locator.agent.md    # Find research documents
+│   │   └── mslearn-web-search-researcher.agent.md # Web research
 │   ├── config/
 │   │   └── workflow-config.json         # Central configuration
 │   ├── instructions/
 │   │   └── azure-devops-workitems.instructions.md
 │   ├── plans/                           # Legacy location (deprecated)
 │   └── prompts/                         # User-initiated workflows
-│       ├── small-feature.prompt.md      # Quick feature implementation
-│       ├── large-feature.prompt.md      # Complex multi-repo features
-│       ├── parity-feature.prompt.md     # Port features between repos
-│       ├── ship-it.prompt.md            # Commit, push, create PR
-│       ├── review-it.prompt.md          # Review PR branches
-│       ├── update-plan.prompt.md        # Sync plan with codebase
-│       ├── create-ado-workitems.prompt.md # Create ADO items from plan
-│       ├── assign-swe.prompt.md         # Assign GitHub SWE to work
-│       ├── pre-commit.prompt.md         # Quality gate checks
-│       ├── create_handoff.prompt.md     # Create session handoffs
-│       ├── create_plan.prompt.md        # Create implementation plans
-│       ├── implement_plan.prompt.md     # Implement from plans
-│       ├── research_codebase.prompt.md  # Research codebase
-│       └── resume_handoff.prompt.md     # Resume from handoffs
+│       ├── mslearn-small-feature.prompt.md      # Quick feature implementation
+│       ├── mslearn-large-feature.prompt.md      # Complex multi-repo features
+│       ├── mslearn-parity-feature.prompt.md     # Port features between repos
+│       ├── mslearn-ship-it.prompt.md            # Commit, push, create PR
+│       ├── mslearn-review-it.prompt.md          # Review PR branches
+│       ├── mslearn-update-plan.prompt.md        # Sync plan with codebase
+│       ├── mslearn-create-ado-workitems.prompt.md # Create ADO items from plan
+│       ├── mslearn-assign-swe.prompt.md         # Assign GitHub SWE to work
+│       ├── mslearn-pre-commit.prompt.md         # Quality gate checks
+│       ├── mslearn-create_handoff.prompt.md     # Create session handoffs
+│       ├── mslearn-create_plan.prompt.md        # Create implementation plans
+│       ├── mslearn-implement_plan.prompt.md     # Implement from plans
+│       ├── mslearn-research_codebase.prompt.md  # Research codebase
+│       └── mslearn-resume_handoff.prompt.md     # Resume from handoffs
 └── agent-artifacts/                     # Agent output (not committed)
     ├── research/                        # Research documents
     ├── plans/                           # Implementation plans

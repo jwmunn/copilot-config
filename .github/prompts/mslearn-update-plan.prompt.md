@@ -1,4 +1,3 @@
-````prompt
 ---
 description: Review codebase status and update implementation plan with current progress
 ---
@@ -216,4 +215,3 @@ Would you like to:
 → Document for later/handoff
 ```
 
-````

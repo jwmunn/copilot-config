@@ -1,4 +1,3 @@
-````prompt
 ---
 description: Pre-commit quality gate - run before committing changes to catch issues early
 ---
@@ -187,4 +186,3 @@ This should only be used for:
 Proceeding without quality gates...
 ```
 
-````

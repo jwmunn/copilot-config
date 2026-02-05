@@ -1,9 +1,7 @@
-````chatagent
 ---
-name: research
-description: Deep research agent for understanding codebases, documenting systems, and determining feature requirements. Use this to analyze one or more repositories and produce comprehensive research artifacts.
-tools: Read, Grep, Glob, LS, WebSearch, WebFetch
-model: opus
+name: mslearn-research
+description: Deep research agent for understanding codebases, documenting systems, and determining feature requirements.
+tools: []
 ---
 
 # Research Agent
@@ -218,7 +216,7 @@ Please review the research artifact for accuracy before proceeding.
 
 When ready to create an implementation plan:
 
-  @planning Create implementation plan from:
+  @mslearn-planning Create implementation plan from:
   copilot-config/agent-artifacts/research/{filename}.md
 ```
 
@@ -268,4 +266,3 @@ When researching multiple repos for E2E features:
 - Include build commands from config in success criteria
 - Reference repo pairs from config for E2E analysis
 
-````

@@ -1,6 +1,6 @@
 ---
 description: Document codebase as-is without evaluation or recommendations
-model: opus
+model: Claude Sonnet 4 (copilot)
 ---
 
 # Research Codebase
@@ -121,7 +121,7 @@ Then wait for the user's research query.
      ## Detailed Findings
 
      ### [Component/Area 1]
-     - Description of what exists ([file.ext:line](link))
+     - Description of what exists (file.ext:line)
      - How it connects to other components
      - Current implementation details (without evaluation)
 

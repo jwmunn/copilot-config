@@ -1,4 +1,3 @@
-````prompt
 ---
 description: Review a PR branch and provide structured feedback
 ---
@@ -155,4 +154,3 @@ Before shipping, consider running review:
 3. /ship-it            # Push and create PR
 ```
 
-````

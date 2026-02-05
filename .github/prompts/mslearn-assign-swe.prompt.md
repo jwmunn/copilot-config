@@ -1,4 +1,3 @@
-````prompt
 ---
 description: Assign GitHub Copilot SWE to an ADO work item
 ---
@@ -169,4 +168,3 @@ az boards query \
     --project Engineering
 ```
 
-````

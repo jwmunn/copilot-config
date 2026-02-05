@@ -1,9 +1,7 @@
-````chatagent
 ---
-name: multi-agent-startup
-description: Coordinates parallel work across multiple tasks by creating git worktrees and providing startup commands. Detects conflicts and ensures separation of concerns.
-tools: Read, Grep, Glob, LS, Bash
-model: sonnet
+name: mslearn-multi-agent-startup
+description: Coordinates parallel work by creating git worktrees and detecting conflicts.
+tools: []
 ---
 
 # Multi-Agent Startup Agent
@@ -216,5 +214,3 @@ Shall I:
 2. Provide detailed startup steps for a specific worktree?
 3. Reassign tasks to different groupings?
 ```
-
-````

@@ -1,9 +1,7 @@
-````chatagent
 ---
-name: code-review
-description: Reviews PR branches against repository patterns and standards. Provides feedback without making changes. Outputs structured review documents.
-tools: Read, Grep, Glob, LS
-model: opus
+name: mslearn-code-review
+description: Reviews PR branches against repository patterns and standards.
+tools: []
 ---
 
 # Code Review Agent
@@ -281,4 +279,3 @@ Would you like me to:
 4. **Prioritize clearly** - Help reviewer focus on what matters
 5. **Include positives** - Acknowledge good work
 
-````

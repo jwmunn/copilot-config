@@ -1,4 +1,3 @@
-````prompt
 ---
 description: Quick workflow for small, well-defined features - analyze and implement in one session
 ---
@@ -98,4 +97,3 @@ Load from `copilot-config/.github/config/workflow-config.json`:
 - If blocked by unclear requirements, ask rather than assume
 - If pattern matching is complex, use **codebase-pattern-finder** agent
 
-````

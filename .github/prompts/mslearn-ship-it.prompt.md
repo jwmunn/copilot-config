@@ -1,4 +1,3 @@
-````prompt
 ---
 description: Commit, push, create PR with proper template and preview URLs
 ---
@@ -230,4 +229,3 @@ Would execute:
 Preview URL would be: {url}
 ```
 
-````

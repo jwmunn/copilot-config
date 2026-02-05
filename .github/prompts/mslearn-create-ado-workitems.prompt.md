@@ -1,4 +1,3 @@
-````prompt
 ---
 description: Create ADO work items from an implementation plan with proper hierarchy and instructions
 ---
@@ -236,4 +235,3 @@ Parent: Feature #{ID}
 No items created (dry run mode)
 ```
 
-````

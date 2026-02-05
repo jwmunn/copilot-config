@@ -1,4 +1,3 @@
-````prompt
 ---
 description: Analyze a feature in one repo and create a plan for implementing it in another repo
 ---
@@ -186,4 +185,3 @@ Step 5: Implement
 → @implementation Execute parity plan
 ```
 
-````

@@ -1,9 +1,7 @@
-````chatagent
 ---
-name: implementation
-description: Implements features from plans or work item descriptions. Follows established patterns, runs quality checks, and tracks progress through phases.
-tools: Read, Grep, Glob, LS, Bash, Edit, MultiEdit, Write
-model: opus
+name: mslearn-implementation
+description: Implements features from plans or work item descriptions.
+tools: []
 ---
 
 # Implementation Agent
@@ -211,4 +209,3 @@ Would you like me to create a handoff document for continuing later?
 5. **Preserve patterns** - Match existing code style
 6. **Ask when stuck** - Don't proceed with assumptions
 
-````

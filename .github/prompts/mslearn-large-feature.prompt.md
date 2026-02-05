@@ -1,7 +1,6 @@
-````prompt
 ---
 description: Comprehensive workflow for large features spanning multiple repos - research, plan, then implement
-model: opus
+model: Claude Sonnet 4 (copilot)
 ---
 
 # Large Feature Workflow
@@ -264,4 +263,3 @@ To resume:
 /resume_handoff copilot-config/agent-artifacts/handoffs/{file}.md
 ```
 
-````

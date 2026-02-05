@@ -1,9 +1,7 @@
-````chatagent
 ---
-name: planning
-description: Creates detailed implementation plans from research artifacts or feature descriptions. Outputs actionable plans that can be executed by the implementation agent or used to create ADO workitems.
-tools: Read, Grep, Glob, LS
-model: opus
+name: mslearn-planning
+description: Creates detailed implementation plans from research artifacts or feature descriptions.
+tools: []
 ---
 
 # Planning Agent
@@ -264,4 +262,3 @@ When ready, choose your next step:
 - Plans must be complete - no unresolved questions
 - Each phase must be independently testable
 
-````
