@@ -57,7 +57,7 @@ export class ChatParticipantManager {
             
             try {
                 // Add agent description as context
-                stream.markdown(`**${agent.name}**: ${agent.description}\\n\\n`);
+                stream.markdown(`**${agent.name}**: ${agent.description}\n\n`);
 
                 // Parse the user's request
                 const userPrompt = request.prompt || '';
@@ -65,22 +65,29 @@ export class ChatParticipantManager {
                 // Create the agent prompt by combining the user request with the agent's content
                 const agentPrompt = this.buildAgentPrompt(agent, userPrompt, context);
                 
-                // Send the prompt to GitHub Copilot
-                const responses = await vscode.lm.sendChatRequest(
-                    'copilot-gpt-4',
-                    [
-                        vscode.LanguageModelChatMessage.User(agentPrompt)
-                    ],
-                    {},
-                    token
-                );
+                // Select a chat model (prefer Claude, fall back to any Copilot model)
+                const models = await vscode.lm.selectChatModels({
+                    vendor: 'copilot'
+                });
 
-                // Stream the response
-                for await (const response of responses.text) {
+                if (models.length === 0) {
+                    stream.markdown('❌ No language models available. Please ensure GitHub Copilot is enabled.');
+                    return { errorDetails: { message: 'No models available' } };
+                }
+
+                const model = models[0];
+                const messages = [
+                    vscode.LanguageModelChatMessage.User(agentPrompt)
+                ];
+
+                // Send the request and stream the response
+                const response = await model.sendRequest(messages, {}, token);
+
+                for await (const fragment of response.text) {
                     if (token.isCancellationRequested) {
                         break;
                     }
-                    stream.markdown(response);
+                    stream.markdown(fragment);
                 }
 
                 return { metadata: { command: agent.name } };

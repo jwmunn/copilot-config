@@ -67,15 +67,42 @@ agent-artifacts/    # Output directory (not committed)
 | `{ticketId}` | User input | `AB#123456` |
 | `{description}` | User input | `rating-system` |
 
-## Common Workflows
+## Available Agents (`@mention`)
+
+Agents run in isolated context for autonomous, multi-step work:
+
+| Agent | Purpose |
+|-------|---------|
+| `@mslearn-research` | Deep codebase research and documentation |
+| `@mslearn-planning` | Create detailed implementation plans |
+| `@mslearn-implementation` | Execute plans step by step |
+| `@mslearn-code-review` | Review code for quality and patterns |
+
+### Sub-Agents (used by main agents)
+
+| Agent | Purpose |
+|-------|---------|
+| `@mslearn-codebase-locator` | Find WHERE files/components exist |
+| `@mslearn-codebase-analyzer` | Analyze HOW code works |
+| `@mslearn-codebase-pattern-finder` | Find examples of patterns |
+
+## Available Prompts (`/command`)
+
+Prompts run in shared context for quick, interactive workflows:
 
 | Command | Purpose |
 |---------|---------|
 | `/mslearn-small-feature` | Quick implementation (< 2 hours) |
 | `/mslearn-large-feature` | Multi-repo, multi-phase features |
 | `/mslearn-ship-it` | Commit, push, create PR |
-| `@mslearn-research` | Deep codebase analysis |
-| `@mslearn-planning` | Create implementation plans |
+| `/mslearn-pre-commit` | Run pre-commit checks |
+| `/mslearn-review-it` | Quick code review |
+
+## Loading Behavior
+
+- **Agents** (`.agent.md`): Loaded only when invoked with `@agent-name`
+- **Prompts** (`.prompt.md`): Loaded only when invoked with `/command`  
+- **Instructions** (`.instructions.md`): Auto-loaded based on `applyTo` file patterns
 
 ## Adding New Components
 
