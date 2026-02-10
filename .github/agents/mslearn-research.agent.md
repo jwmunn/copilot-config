@@ -2,14 +2,12 @@
 name: mslearn-research
 description: Deep codebase research and documentation - investigates code patterns, architecture, and how systems work
 tools:
-  - read_file
-  - semantic_search
-  - grep_search
-  - file_search
-  - list_dir
-  - run_in_terminal
-  - runSubagent
-model: Claude Sonnet 4 (copilot)
+  - read
+  - edit
+  - search
+  - execute
+  - agent
+  - web
 ---
 
 # Research Agent

@@ -2,18 +2,11 @@
 name: mslearn-implementation
 description: Execute implementation plans - reads plan artifacts and implements step by step
 tools:
-  - read_file
-  - create_file
-  - replace_string_in_file
-  - multi_replace_string_in_file
-  - semantic_search
-  - grep_search
-  - file_search
-  - list_dir
-  - run_in_terminal
-  - get_errors
-  - runTests
-model: Claude Sonnet 4 (copilot)
+  - read
+  - edit
+  - search
+  - execute
+  - todo
 ---
 
 # Implementation Agent

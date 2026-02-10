@@ -1,6 +1,6 @@
 ---
 description: Comprehensive workflow for large features spanning multiple repos - research, plan, then implement
-model: Claude Sonnet 4 (copilot)
+model: Claude Opus 4.6 (copilot)
 ---
 
 # Large Feature Workflow

@@ -2,14 +2,10 @@
 name: mslearn-code-review
 description: Review code changes for quality, patterns, and potential issues
 tools:
-  - read_file
-  - semantic_search
-  - grep_search
-  - file_search
-  - list_dir
-  - run_in_terminal
-  - get_errors
-model: Claude Sonnet 4 (copilot)
+  - read
+  - edit
+  - search
+  - execute
 ---
 
 # Code Review Agent

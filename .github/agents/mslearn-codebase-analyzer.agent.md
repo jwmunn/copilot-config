@@ -2,12 +2,8 @@
 name: mslearn-codebase-analyzer
 description: Analyze HOW specific code works - trace data flow, understand implementations
 tools:
-  - read_file
-  - semantic_search
-  - grep_search
-  - file_search
-  - list_dir
-model: Claude Sonnet 4 (copilot)
+  - read
+  - search
 ---
 
 # Codebase Analyzer

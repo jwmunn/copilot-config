@@ -2,12 +2,8 @@
 name: mslearn-codebase-locator
 description: Find WHERE files, components, and code patterns exist in the codebase
 tools:
-  - semantic_search
-  - grep_search
-  - file_search
-  - list_dir
-  - read_file
-model: Claude Sonnet 4 (copilot)
+  - read
+  - search
 ---
 
 # Codebase Locator

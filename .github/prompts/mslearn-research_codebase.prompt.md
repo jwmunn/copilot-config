@@ -1,6 +1,6 @@
 ---
 description: Document codebase as-is without evaluation or recommendations
-model: Claude Sonnet 4 (copilot)
+model: Claude Opus 4.6 (copilot)
 ---
 
 # Research Codebase

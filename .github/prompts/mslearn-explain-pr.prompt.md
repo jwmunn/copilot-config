@@ -1,7 +1,7 @@
 ````prompt
 ---
 description: Explain what was done in a PR branch with research-style documentation
-model: Claude Sonnet 4 (copilot)
+model: Claude Opus 4.6 (copilot)
 ---
 
 # Explain PR Workflow

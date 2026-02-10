@@ -2,14 +2,12 @@
 name: mslearn-planning
 description: Create detailed implementation plans for features - breaks down work into actionable steps
 tools:
-  - read_file
-  - semantic_search
-  - grep_search
-  - file_search
-  - list_dir
-  - run_in_terminal
-  - runSubagent
-model: Claude Sonnet 4 (copilot)
+  - read
+  - edit
+  - search
+  - execute
+  - agent
+  - todo
 ---
 
 # Planning Agent

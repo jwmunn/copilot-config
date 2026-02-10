@@ -2,12 +2,8 @@
 name: mslearn-codebase-pattern-finder
 description: Find examples of specific patterns, conventions, and implementations in the codebase
 tools:
-  - semantic_search
-  - grep_search
-  - file_search
-  - read_file
-  - list_dir
-model: Claude Sonnet 4 (copilot)
+  - read
+  - search
 ---
 
 # Codebase Pattern Finder
