@@ -1,6 +1,6 @@
 ---
 description: Comprehensive workflow for large features spanning multiple repos - research, plan, then implement
-model: Claude Opus 4.6 (copilot)
+mode: agent
 ---
 
 # Large Feature Workflow

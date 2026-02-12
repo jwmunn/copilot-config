@@ -1,6 +1,6 @@
 ---
 description: Create implementation plans with thorough research (no thoughts directory)
-model: Claude Opus 4.6 (copilot)
+mode: agent
 ---
 
 # Implementation Plan

@@ -1,5 +1,6 @@
 ---
 description: Analyze a feature in one repo and create a plan for implementing it in another repo
+mode: agent
 ---
 
 # Parity Feature Workflow

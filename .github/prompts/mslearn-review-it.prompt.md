@@ -1,5 +1,6 @@
 ---
 description: Review a PR branch and provide structured feedback
+mode: agent
 ---
 
 # Review It Workflow

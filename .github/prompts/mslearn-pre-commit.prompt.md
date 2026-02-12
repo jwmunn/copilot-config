@@ -1,5 +1,6 @@
 ---
 description: Pre-commit quality gate - run before committing changes to catch issues early
+mode: agent
 ---
 
 # Pre-Commit Quality Check

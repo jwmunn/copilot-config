@@ -1,5 +1,6 @@
 ---
 description: Create handoff document for transferring work to another session
+mode: agent
 ---
 
 # Create Handoff

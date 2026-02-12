@@ -1,5 +1,6 @@
 ---
 description: Review codebase status and update implementation plan with current progress
+mode: agent
 ---
 
 # Update Plan Workflow

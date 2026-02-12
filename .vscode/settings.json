@@ -1,4 +1,21 @@
 {
   "markdown.styles": ["c:/repos/mslearn/copilot-config/.vscode/global-markdown.css"],
-  "explorer.excludeGitIgnore": false
+  "explorer.excludeGitIgnore": false,
+
+  // Copilot Hooks - automatic instructions for Copilot actions
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Follow conventional commits format: type(scope): description. Types: feat, fix, refactor, docs, test, chore. Scope is optional. Keep the subject line under 72 characters. Include a body for non-trivial changes explaining what and why. Reference ADO work items with AB#{id} in the footer when applicable."
+    }
+  ],
+  "github.copilot.chat.reviewSelection.instructions": [
+    {
+      "text": "Review code against Microsoft Learn platform patterns. Check for: proper TypeScript types (no 'any'), Fluent UI design token usage instead of hardcoded values, SSR compatibility (no browser-only APIs in render paths), proper error handling, accessibility (WCAG compliance, ARIA roles), and adherence to existing patterns in the same directory. Flag new patterns that diverge from established conventions."
+    }
+  ],
+  "github.copilot.chat.testGeneration.instructions": [
+    {
+      "text": "Generate tests using Jest with TypeScript. Follow existing test patterns in the same test directory. Use descriptive test names with 'should' prefix. Mock external dependencies. For React components, test both client and SSR rendering paths. Reference test/jest.config.ts for configuration. Griffel CSS-in-JS operations should be mocked for performance."
+    }
+  ]
 }

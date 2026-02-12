@@ -1,5 +1,6 @@
 ---
 description: Quick workflow for small, well-defined features - analyze and implement in one session
+mode: agent
 ---
 
 # Small Feature Workflow

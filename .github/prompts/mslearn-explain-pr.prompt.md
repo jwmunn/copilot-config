@@ -1,7 +1,6 @@
-````prompt
 ---
 description: Explain what was done in a PR branch with research-style documentation
-model: Claude Opus 4.6 (copilot)
+mode: agent
 ---
 
 # Explain PR Workflow
@@ -237,4 +236,3 @@ The explain document complements the review process:
 4. **Include trade-offs** - Document alternatives considered
 5. **Think about future** - Help future maintainers understand the code
 
-````

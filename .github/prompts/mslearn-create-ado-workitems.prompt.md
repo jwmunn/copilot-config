@@ -1,5 +1,6 @@
 ---
 description: Create ADO work items from an implementation plan with proper hierarchy and instructions
+mode: agent
 ---
 
 # Create Azure DevOps Work Items from Plan

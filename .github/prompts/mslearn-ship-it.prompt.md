@@ -1,5 +1,6 @@
 ---
 description: Commit, push, create PR with proper template and preview URLs
+mode: agent
 ---
 
 # Ship It Workflow

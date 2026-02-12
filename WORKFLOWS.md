@@ -10,47 +10,51 @@ This document describes the GitHub Copilot workflow automation system for the Mi
 |------|---------|----------------|-------------|
 | **Instructions** | Static rules auto-loaded by file patterns | Low (loaded automatically) | Coding standards, patterns that always apply |
 | **Agents** | Autonomous tasks with their own context | Isolated (separate context) | Complex research, analysis, multi-step autonomous work |
-| **Prompts** | User-initiated workflow orchestration | Shared (uses main context) | Interactive workflows, orchestrating agents |
-| **Skills** | Focused single-purpose operations | Minimal | Specific actions like creating ADO items |
-| **Hooks** | Automated quality gates | Minimal | Pre-commit validations |
+| **Prompts** | User-initiated multi-step workflow orchestration | Shared (uses main context) | Interactive workflows, orchestrating agents |
+| **Skills** | Self-contained single-purpose actions (`SKILL.md` packages) | On-demand | Specific actions: ADO items, handoffs, SWE assignment |
+| **Hooks** | Automated Copilot instructions for specific actions | Minimal (auto-applied) | Commit messages, code review, test generation |
+
+> **Note**: Skills use the `SKILL.md` format in `.github/skills/{name}/` directories with `name` and `description` frontmatter. Each skill is a self-contained package that may include `references/` for templates and domain knowledge. Hooks are configured as VS Code Copilot settings in `.vscode/settings.json`.
 
 ### Directory Structure
 
 ```
 copilot-config/
 ├── .github/
-│   ├── agents/                          # Autonomous agents
-│   │   ├── mslearn-research.agent.md            # Deep codebase research
-│   │   ├── mslearn-planning.agent.md            # Create implementation plans
-│   │   ├── mslearn-implementation.agent.md      # Implement features
-│   │   ├── mslearn-code-review.agent.md         # Review PRs
-│   │   ├── mslearn-multi-agent-startup.agent.md # Parallel work coordination
-│   │   ├── mslearn-codebase-analyzer.agent.md   # Analyze implementation details
-│   │   ├── mslearn-codebase-locator.agent.md    # Find files and components
-│   │   ├── mslearn-codebase-pattern-finder.agent.md # Find code patterns
-│   │   ├── mslearn-thoughts-analyzer.agent.md   # Analyze research documents
-│   │   ├── mslearn-thoughts-locator.agent.md    # Find research documents
-│   │   └── mslearn-web-search-researcher.agent.md # Web research
+│   ├── agents/                          # Autonomous agents (loaded by vscode-extension)
+│   │   └── (agent .md files loaded by MSLearn Copilot Agents extension)
 │   ├── config/
 │   │   └── workflow-config.json         # Central configuration
 │   ├── instructions/
 │   │   └── azure-devops-workitems.instructions.md
-│   ├── plans/                           # Legacy location (deprecated)
-│   └── prompts/                         # User-initiated workflows
-│       ├── mslearn-small-feature.prompt.md      # Quick feature implementation
-│       ├── mslearn-large-feature.prompt.md      # Complex multi-repo features
-│       ├── mslearn-parity-feature.prompt.md     # Port features between repos
-│       ├── mslearn-ship-it.prompt.md            # Commit, push, create PR
-│       ├── mslearn-review-it.prompt.md          # Review PR branches
-│       ├── mslearn-update-plan.prompt.md        # Sync plan with codebase
-│       ├── mslearn-create-ado-workitems.prompt.md # Create ADO items from plan
-│       ├── mslearn-assign-swe.prompt.md         # Assign GitHub SWE to work
-│       ├── mslearn-pre-commit.prompt.md         # Quality gate checks
-│       ├── mslearn-create_handoff.prompt.md     # Create session handoffs
-│       ├── mslearn-create_plan.prompt.md        # Create implementation plans
-│       ├── mslearn-implement_plan.prompt.md     # Implement from plans
-│       ├── mslearn-research_codebase.prompt.md  # Research codebase
-│       └── mslearn-resume_handoff.prompt.md     # Resume from handoffs
+│   ├── prompts/                         # User-initiated workflows
+│   │   ├── mslearn-small-feature.prompt.md      # Quick feature implementation
+│   │   ├── mslearn-large-feature.prompt.md      # Complex multi-repo features
+│   │   ├── mslearn-parity-feature.prompt.md     # Port features between repos
+│   │   ├── mslearn-ship-it.prompt.md            # Commit, push, create PR
+│   │   ├── mslearn-review-it.prompt.md          # Review PR branches
+│   │   ├── mslearn-update-plan.prompt.md        # Sync plan with codebase
+│   │   ├── mslearn-create_plan.prompt.md        # Create implementation plans
+│   │   ├── mslearn-implement_plan.prompt.md     # Implement from plans
+│   │   ├── mslearn-research_codebase.prompt.md  # Research codebase
+│   │   └── mslearn-resume_handoff.prompt.md     # Resume from handoffs
+│   └── skills/                          # Self-contained single-purpose actions (SKILL.md)
+│       ├── create-ado-workitems/
+│       │   ├── SKILL.md                         # Create ADO items from plan
+│       │   └── references/templates.md          # HTML templates for work items
+│       ├── assign-swe/
+│       │   └── SKILL.md                         # Assign GitHub SWE to work item
+│       ├── create-handoff/
+│       │   ├── SKILL.md                         # Create session handoff document
+│       │   └── references/template.md           # Handoff document template
+│       ├── explain-pr/
+│       │   ├── SKILL.md                         # Generate PR explanation document
+│       │   └── references/template.md           # PR explanation template
+│       └── pre-commit/
+│           └── SKILL.md                         # Run quality gate checks
+├── .vscode/
+│   └── settings.json                   # Copilot hooks (commit, review, test)
+├── vscode-extension/                   # MSLearn Copilot Agents extension
 └── agent-artifacts/                     # Agent output (not committed)
     ├── research/                        # Research documents
     ├── plans/                           # Implementation plans
@@ -405,13 +409,16 @@ Merge Order:
 
 ## Skills
 
+Skills are self-contained, single-purpose action packages using the `SKILL.md` format. Each skill lives in `.github/skills/{name}/` with a `SKILL.md` file (containing `name` and `description` frontmatter) and optional `references/` for templates and domain knowledge.
+
 ### Create ADO Work Items
 
-```
-/create-ado-workitems
+Skill: `.github/skills/create-ado-workitems/`
 
-Plan: copilot-config/agent-artifacts/plans/2026-02-04-rating-plan.md
-Parent Feature: 12345
+```
+Create ADO work items from plan:
+  Plan: copilot-config/agent-artifacts/plans/2026-02-04-rating-plan.md
+  Parent Feature: 12345
 ```
 
 Creates hierarchical work items from implementation plans:
@@ -421,58 +428,105 @@ Creates hierarchical work items from implementation plans:
 
 ### Assign GitHub SWE
 
+Skill: `.github/skills/assign-swe/`
+
 ```
-/assign-swe 67890
-/assign-swe 67890 --instructions "Follow Phase 2 of the rating plan"
+Assign SWE to work item 67890
+Assign SWE to 67890 with instructions: "Follow Phase 2 of the rating plan"
 ```
 
 Assigns GitHub Copilot Workspace Agent to work items suitable for automated implementation.
 
----
+### Create Handoff
 
-## Quality Hooks
+Skill: `.github/skills/create-handoff/`
+
+When stopping work to resume later:
+
+```
+Create a handoff for this session
+```
+
+Creates structured handoff document with task status, recent changes, learnings, artifacts, and next steps. Saves to `agent-artifacts/handoffs/`.
+
+### Explain PR
+
+Skill: `.github/skills/explain-pr/`
+
+Generate comprehensive documentation of what was done in a PR branch:
+
+```
+Explain what was done in this PR branch
+```
+
+Creates a research-style document explaining all changes, architectural decisions, and pattern references. Saves to `agent-artifacts/reviews/`.
 
 ### Pre-Commit Check
 
-Automatically run before `/ship-it` or manually:
+Skill: `.github/skills/pre-commit/`
+
+Run repository-specific quality gates manually:
 
 ```
-/pre-commit
+Run pre-commit quality checks
 ```
 
-Runs repository-specific quality gates:
+Runs the matching command from `workflow-config.json` for the current repo:
 | Repository | Command |
 |------------|---------|
 | docs-ui | `npx wireit betterer precommit --cache` |
 | Learn.SharedComponents | `npm run clean && npm run components:build && npm run app:build` |
 | Docs.ContentService | `dotnet build` |
 
+> `/mslearn-ship-it` runs this automatically before committing.
+
+---
+
+## Copilot Hooks
+
+Hooks are automated Copilot instructions that apply to specific actions without manual invocation. They are configured in `.vscode/settings.json`.
+
+### Commit Message Generation
+
+**Setting**: `github.copilot.chat.commitMessageGeneration.instructions`
+
+Automatically applies conventional commits format when Copilot generates commit messages:
+- Format: `type(scope): description`
+- Types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`
+- ADO work items referenced with `AB#{id}` in footer
+
+### Code Review
+
+**Setting**: `github.copilot.chat.reviewSelection.instructions`
+
+Automatically applies Microsoft Learn platform standards when Copilot reviews code:
+- No `any` types in TypeScript
+- Fluent UI design tokens over hardcoded values
+- SSR compatibility checks
+- WCAG accessibility compliance
+- Pattern adherence validation
+
+### Test Generation
+
+**Setting**: `github.copilot.chat.testGeneration.instructions`
+
+Automatically applies project test conventions when Copilot generates tests:
+- Jest with TypeScript
+- Descriptive `should` test names
+- Griffel CSS-in-JS mocked for performance
+- Both client and SSR rendering paths for React components
+
 ---
 
 ## Session Management
-
-### Create Handoff
-
-When stopping work to resume later:
-
-```
-/create_handoff
-```
-
-Creates structured handoff document with:
-- Task status
-- Recent changes
-- Learnings
-- Artifacts
-- Next steps
 
 ### Resume Handoff
 
 When resuming work:
 
 ```
-/resume_handoff CAS-123
-/resume_handoff copilot-config/agent-artifacts/handoffs/CAS-123/2026-02-04_...md
+/mslearn-resume_handoff CAS-123
+/mslearn-resume_handoff copilot-config/agent-artifacts/handoffs/CAS-123/2026-02-04_...md
 ```
 
 Loads context and proposes next actions.
@@ -524,17 +578,27 @@ graph TB
 
 ### Workflow Selection Guide
 
-| Scenario | Workflow |
-|----------|----------|
-| Quick bug fix | `/small-feature` |
-| New feature, single repo | `/small-feature` or `/large-feature` |
-| Cross-repo feature | `/large-feature` |
-| Copy feature to another repo | `/parity-feature` |
-| Ready to submit PR | `/ship-it` |
-| Review someone's PR | `/review-it` |
-| Multiple independent tasks | `/multi-agent-startup` |
-| Stopping for the day | `/create_handoff` |
-| Starting new session | `/resume_handoff` |
+| Scenario | Command | Type |
+|----------|---------|------|
+| Quick bug fix | `/mslearn-small-feature` | Workflow |
+| New feature, single repo | `/mslearn-small-feature` or `/mslearn-large-feature` | Workflow |
+| Cross-repo feature | `/mslearn-large-feature` | Workflow |
+| Copy feature to another repo | `/mslearn-parity-feature` | Workflow |
+| Create implementation plan | `/mslearn-create_plan` | Workflow |
+| Implement from plan | `/mslearn-implement_plan` | Workflow |
+| Research codebase | `/mslearn-research_codebase` | Workflow |
+| Sync plan with codebase | `/mslearn-update-plan` | Workflow |
+| Review PR branch | `/mslearn-review-it` | Workflow |
+| Ready to submit PR | `/mslearn-ship-it` | Workflow |
+| Create ADO work items | `create-ado-workitems` skill | Skill |
+| Assign SWE to work item | `assign-swe` skill | Skill |
+| Document PR changes | `explain-pr` skill | Skill |
+| Run quality checks | `pre-commit` skill | Skill |
+| Stopping for the day | `create-handoff` skill | Skill |
+| Starting new session | `/mslearn-resume_handoff` | Workflow |
+| Commit message format | *(automatic)* | Hook |
+| Code review standards | *(automatic)* | Hook |
+| Test generation conventions | *(automatic)* | Hook |
 
 ### Agent Delegation
 

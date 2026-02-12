@@ -1,5 +1,6 @@
 ---
 description: Assign GitHub Copilot SWE to an ADO work item
+mode: agent
 ---
 
 # Assign GitHub SWE to Work Item
