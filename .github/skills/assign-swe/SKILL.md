@@ -1,5 +1,4 @@
 ---
-name: assign-swe
 description: Assign GitHub Copilot SWE (autonomous coding agent) to an Azure DevOps work item with structured implementation instructions. Use when a user wants to delegate a work item to SWE, assign an automated agent to implement a task, or batch-assign SWE to plan phases marked as SWE candidates. Triggers on "assign SWE", "delegate to SWE", "automate this work item".
 ---
 

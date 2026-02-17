@@ -1,5 +1,4 @@
 ---
-name: create-ado-workitems
 description: Create structured Azure DevOps work items from an implementation plan with proper hierarchy (Feature → User Stories → Tasks). Use when a user wants to create ADO work items from a plan, break down an implementation plan into trackable work items, or set up a work item hierarchy for a feature. Triggers on requests like "create work items", "create ADO items from plan", "break this plan into stories and tasks".
 ---
 

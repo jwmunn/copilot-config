@@ -1,5 +1,4 @@
 ---
-name: session-learnings
 description: Analyze a completed session to extract learnings and generate self-healing patches for agents, prompts, skills, and instructions. Use at the end of a session to capture corrections, workarounds, and improvements the user made. Triggers on "extract learnings", "session learnings", "self-heal", "apply learnings", "improve prompts from session".
 ---
 

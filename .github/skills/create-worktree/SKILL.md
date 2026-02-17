@@ -1,5 +1,4 @@
 ---
-name: create-worktree
 description: Create a new git worktree and duplicate the current VS Code workspace with the worktree swapped in, optionally creating a handoff document to transfer task context to the new workspace. Use when starting work on a new branch that needs an isolated working directory mirroring your current multi-root workspace. Triggers on "create worktree", "new worktree", "set up worktree", "worktree for branch".
 ---
 
