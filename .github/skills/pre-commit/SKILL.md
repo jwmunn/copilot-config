@@ -1,5 +1,4 @@
 ---
-name: pre-commit
 description: Run repository-specific quality gate checks before committing changes. Identifies and runs the correct build, lint, and type-check commands based on which repository you're in. Use before any git commit, before the ship-it workflow, or after completing implementation phases. Triggers on "pre-commit check", "quality check", "run checks before commit", "verify build".
 ---
 

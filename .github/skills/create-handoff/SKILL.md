@@ -1,5 +1,4 @@
 ---
-name: create-handoff
 description: Create a concise handoff document to transfer work context to another agent session. Use when ending a session that has unfinished work, switching contexts, or needing to preserve implementation progress for continuity. Triggers on "create handoff", "hand off", "save session", "transfer context", "create continuity document".
 ---
 

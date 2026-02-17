@@ -1,5 +1,5 @@
 ---
-name: prune-worktree
+
 description: Remove git worktrees and their associated VS Code workspace files. Use when cleaning up finished branches, freeing disk space, or tearing down development environments. Triggers on "prune worktree", "remove worktree", "clean up worktrees", "tear down worktree".
 ---
 

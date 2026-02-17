@@ -1,5 +1,4 @@
 ---
-name: explain-pr
 description: Generate comprehensive documentation explaining what was done in a PR branch, including change analysis, architectural decisions, pattern compliance, and impact assessment. Use when a user wants to document a PR before review, onboard reviewers to complex changes, create feature documentation, or explain architectural decisions. Triggers on "explain PR", "explain this branch", "document PR changes", "what did this PR do".
 ---
 
