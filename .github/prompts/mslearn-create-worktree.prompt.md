@@ -19,4 +19,6 @@ Follow the skill instructions in `copilot-config/.github/skills/create-worktree/
 3. Authenticate with Azure and install npm dependencies in the new worktree
 4. Link copilot agents via symlink/junction so they're discoverable in the worktree
 5. Duplicate the current VS Code `.code-workspace` file, replacing the target repo folder with the worktree path while preserving all other folders, settings, and extensions
-6. Open the new workspace and report results
+6. If the user's message includes any task context beyond basic worktree parameters, create a worktree handoff document so the task can be resumed immediately in the new workspace via `/mslearn-resume-handoff`
+7. Open the new workspace in VS Code (and the handoff file if one was created)
+8. Report results, including the `/mslearn-resume-handoff` command if a handoff was created

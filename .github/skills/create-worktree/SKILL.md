@@ -1,6 +1,6 @@
 ---
 name: create-worktree
-description: Create a new git worktree and duplicate the current VS Code workspace with the worktree swapped in. Use when starting work on a new branch that needs an isolated working directory mirroring your current multi-root workspace. Triggers on "create worktree", "new worktree", "set up worktree", "worktree for branch".
+description: Create a new git worktree and duplicate the current VS Code workspace with the worktree swapped in, optionally creating a handoff document to transfer task context to the new workspace. Use when starting work on a new branch that needs an isolated working directory mirroring your current multi-root workspace. Triggers on "create worktree", "new worktree", "set up worktree", "worktree for branch".
 ---
 
 # Create Worktree
@@ -22,6 +22,7 @@ Load from `copilot-config/.github/config/workflow-config.json`:
 | worktree-name | No | Custom name for the worktree directory. Defaults to the branch name slug |
 | base-ref | No | Base ref to create the branch from (default: `origin/main` or repo's `defaultBranch`) |
 | workspace-name | No | Custom name for the new `.code-workspace` file. Defaults to the worktree naming pattern |
+| task-prompt | No | The original task or prompt to hand off to the new workspace session. If provided (or if the user included task context beyond the worktree parameters), creates a worktree handoff document so work can be resumed immediately in the new workspace |
 
 ## Process
 
@@ -164,15 +165,82 @@ If no current workspace file is found, create a new one with the worktree folder
 
 Place it in the same parent directory as the worktree.
 
-### 7. Open the New Workspace
+### 7. Create Worktree Handoff (if task context exists)
 
-```bash
-code "${WORKSPACE_FILE}"
+If the user provided a `task-prompt` parameter **or** included any task description, context, or instructions beyond the basic worktree parameters (branch, name, etc.), create a lightweight handoff document so work can be resumed immediately in the new workspace.
+
+**When to create a handoff:** Always create one if the user's message contains more than just "create a worktree for branch X". For example, if they say "create a worktree for branch X to implement the rating component" — the "implement the rating component" part is the task prompt.
+
+#### 7a. Build the Handoff Document
+
+Create a markdown file with this structure:
+
+```markdown
+---
+date: [ISO 8601 timestamp]
+branch: [branch name]
+repository: [repository name]
+worktree_path: [absolute worktree path]
+workspace_file: [workspace filename]
+status: ready-to-start
+type: worktree_handoff
+---
+
+# Worktree Handoff: {branch description}
+
+## Task
+{The original task/prompt from the user, preserved verbatim}
+
+## Environment
+- **Branch**: `{branch}`
+- **Worktree**: `{worktree-path}`
+- **Workspace**: `{workspace-file}`
+- **Repository**: `{repo-name}`
+- **Base ref**: `{base-ref}`
+
+## Context
+{Any additional context from the current session that's relevant — e.g., related plan files, research docs, ticket references, key file paths mentioned}
+
+## Next Steps
+1. Open this handoff with `/mslearn-resume-handoff` to continue the task
+2. Or read this file and begin working on the task described above
 ```
 
-### 8. Report Results
+#### 7b. Save the Handoff
 
-**On success**: Confirm worktree is ready, show the path, and confirm the workspace opened:
+Save to `copilot-config/agent-artifacts/handoffs/` following the standard naming convention:
+
+```bash
+# Determine ticket directory
+TICKET_DIR="general"  # or CAS-XXX if a ticket is referenced
+
+# Generate filename
+TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
+DESCRIPTION=$(echo "<worktree-name>" | tr '/' '-')
+HANDOFF_FILE="copilot-config/agent-artifacts/handoffs/${TICKET_DIR}/${TIMESTAMP}_${DESCRIPTION}.md"
+```
+
+#### 7c. Skip Conditions
+
+Skip handoff creation if:
+- The user's message contains **only** worktree parameters with no task context
+- The user explicitly says they don't need a handoff
+
+### 8. Open the New Workspace
+
+Open the workspace in VS Code. If a handoff was created, also open the handoff file so it's immediately visible:
+
+```bash
+# Without handoff
+code "${WORKSPACE_FILE}"
+
+# With handoff — open workspace and the handoff file
+code "${WORKSPACE_FILE}" "${HANDOFF_FILE}"
+```
+
+### 9. Report Results
+
+**On success (without handoff)**:
 
 ```
 ✅ Worktree ready at <worktree-path>
@@ -182,9 +250,24 @@ code "${WORKSPACE_FILE}"
    Preserved: all other folders, settings, and extensions
 ```
 
-**On failure**: Show which step failed (worktree creation, auth, install, symlink, or workspace duplication) and suggest fixes:
+**On success (with handoff)**:
+
+```
+✅ Worktree ready at <worktree-path>
+🔗 Agents linked from copilot-config
+📂 Workspace duplicated: <original-workspace> → <new-workspace>.code-workspace
+   Replaced: <repo-name> → <worktree-name>
+   Preserved: all other folders, settings, and extensions
+📋 Worktree handoff created: <handoff-file-path>
+
+Resume in the new workspace with:
+/mslearn-resume-handoff <handoff-file-path>
+```
+
+**On failure**: Show which step failed (worktree creation, auth, install, symlink, workspace duplication, or handoff creation) and suggest fixes:
 - Auth failure → check VPN, re-run `vsts-npm-auth -F -C .npmrc`
 - npm install failure → verify `.npmrc` exists, retry `vsts-npm-auth`
 - Worktree conflict → `git worktree list` to check existing worktrees
 - Symlink failure → check if `.github/agents` already exists, or run `setup-agents` manually
 - Workspace duplication failure → check if the original `.code-workspace` file is valid JSON, or provide the path manually
+- Handoff creation failure → non-blocking, worktree is still usable without the handoff
