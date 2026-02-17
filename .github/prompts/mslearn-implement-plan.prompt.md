@@ -1,5 +1,7 @@
 ---
 description: Implement technical plans from thoughts/shared/plans with verification
+agent: mslearn-implementation
+model: Claude Opus 4.6 (fast mode) (Preview) (copilot)
 ---
 
 # Implement Plan

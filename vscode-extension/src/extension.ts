@@ -170,7 +170,7 @@ function showAgentsInfo() {
 		.map(a => `@${a.name}`);
 
 	const message = agentLines.length
-		? `Agents: ${agentLines.join(', ')}\n\nPrompts: Use /mslearn-* (native VS Code)`
+		? `Agents: ${agentLines.join(', ')}\n\nWorkflows: /mslearn-* (native VS Code prompts)\nSkills: .github/skills/ (SKILL.md packages)`
 		: 'No agents loaded.';
 
 	vscode.window.showInformationMessage(message);

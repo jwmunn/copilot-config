@@ -1,5 +1,7 @@
 ---
 description: Review a PR branch and provide structured feedback
+agent: mslearn-code-review
+model: GPT-5.3-Codex (copilot)
 ---
 
 # Review It Workflow

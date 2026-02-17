@@ -10,6 +10,18 @@ This VS Code extension allows you to use your custom MSLearn GitHub Copilot agen
 - 📋 **Follow-up Questions**: Smart follow-up suggestions based on agent type
 - 🎯 **Context Aware**: Passes agent instructions and user prompts to GitHub Copilot
 
+## Architecture
+
+The copilot-config system has three invocation types:
+
+| Type | Location | Invocation | Managed By |
+|------|----------|------------|------------|
+| **Agents** | `.github/agents/*.agent.md` | `@agent-name` | This extension |
+| **Workflows** | `.github/prompts/*.prompt.md` | `/command` | VS Code native prompts |
+| **Skills** | `.github/skills/{name}/SKILL.md` | Context for agents/Copilot | Self-contained packages |
+
+This extension **only manages agents**. Workflows are native VS Code prompt files. Skills are self-contained `SKILL.md` packages in `.github/skills/` that provide specialized knowledge and templates — they are loaded on-demand as context by agents and Copilot, not registered as chat participants.
+
 ## Quick Start
 
 ### 1. Installation
@@ -57,11 +69,24 @@ Example:
 The extension automatically loads all agents from your `.github/agents/` directory:
 
 - `@mslearn-research` - Deep codebase analysis and documentation
-- `@mslearn-planning` - Implementation planning and task breakdown  
-- `@mslearn-code-review` - Code review and quality analysis
+- `@mslearn-planning` - Implementation planning and task breakdown
 - `@mslearn-implementation` - Code implementation assistance
+- `@mslearn-code-review` - Code review and quality analysis
 - `@mslearn-test` - Testing strategy and test generation
-- And more...
+
+## Available Skills
+
+Skills are self-contained packages in `.github/skills/{name}/` with a `SKILL.md` file. They are **not** registered as chat participants — they provide specialized knowledge loaded as context when needed.
+
+| Skill | Location | Purpose |
+|-------|----------|--------|
+| `create-ado-workitems` | `.github/skills/create-ado-workitems/` | Create ADO work items from plan |
+| `assign-swe` | `.github/skills/assign-swe/` | Assign GitHub SWE to work item |
+| `create-handoff` | `.github/skills/create-handoff/` | Create session handoff document |
+| `explain-pr` | `.github/skills/explain-pr/` | Generate PR explanation document |
+| `pre-commit` | `.github/skills/pre-commit/` | Run quality gate checks |
+
+Each skill may include a `references/` directory with templates and domain knowledge.
 
 ## Agent Structure
 
@@ -77,6 +102,17 @@ tools: []
 # Agent Instructions
 
 Your detailed agent instructions go here...
+```
+
+## Skill Structure
+
+Skills use the `SKILL.md` format:
+
+```
+skill-name/
+├── SKILL.md              # name + description frontmatter, instructions
+└── references/           # Optional templates and domain knowledge
+    └── template.md
 ```
 
 ## Commands
@@ -97,6 +133,8 @@ The extension looks for agents in these locations (in order):
 1. `{workspace}/copilot-config/.github/agents/`
 2. `{workspace}/.github/agents/`
 3. `{workspace}/../copilot-config/.github/agents/`
+
+Skills are discovered from `.github/skills/` in the same copilot-config directory.
 
 ## Troubleshooting
 
@@ -135,15 +173,3 @@ npm run watch  # Continuously compile TypeScript changes
 1. Open the extension in VS Code
 2. Press F5 to launch Extension Development Host
 3. Test your changes in the new VS Code window
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-This extension is part of the MSLearn platform tooling.

@@ -74,13 +74,15 @@
       "research": "research",
       "plans": "plans",
       "handoffs": "handoffs",
-      "reviews": "reviews"
+      "reviews": "reviews",
+      "learnings": "learnings"
     },
     "filenamePatterns": {
       "research": "{date}-{ticketId}-{description}.md",
       "plan": "{date}-{ticketId}-{description}-plan.md",
       "handoff": "{date}_{time}_{ticketId}_{description}.md",
-      "review": "{date}-{prNumber}-{description}-review.md"
+      "review": "{date}-{prNumber}-{description}-review.md",
+      "learnings": "{date}-{description}-learnings.md"
     }
   },
 

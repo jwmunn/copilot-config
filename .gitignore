@@ -20,3 +20,6 @@ node_modules/
 # Environment variables (contain sensitive info)
 .env
 .env.local
+
+# Corrupted generated file
+nul

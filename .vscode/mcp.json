@@ -1,0 +1,45 @@
+{
+	"inputs": [
+		{
+			"id": "ado_org",
+			"type": "promptString",
+			"description": "Azure DevOps organization name (e.g. 'ceapex')",
+			"default": "ceapex"
+		}
+	],
+	"servers": {
+		"playwright": {
+			"command": "npx",
+			"args": ["-y", "@playwright/mcp@latest"]
+		},
+		"ado": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@azure-devops/mcp",
+				"${input:ado_org}",
+				"-d",
+				"core",
+				"work",
+				"work-items",
+				"repositories",
+				"pipelines",
+				"search",
+				"wiki"
+			]
+		},
+		"microsoft-learn": {
+			"type": "http",
+			"url": "https://learn.microsoft.com/api/mcp"
+		},
+		"azure": {
+			"command": "npx",
+			"args": ["-y", "@azure/mcp@latest", "server", "start"]
+		},
+		"workiq": {
+			"command": "npx",
+			"args": ["-y", "@microsoft/workiq", "mcp"]
+		}
+	}
+}

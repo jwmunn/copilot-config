@@ -1,6 +1,7 @@
 ---
 description: Create implementation plans with thorough research (no thoughts directory)
-model: Claude Sonnet 4 (copilot)
+agent: mslearn-planning
+model: GPT-5.3-Codex (copilot)
 ---
 
 # Implementation Plan

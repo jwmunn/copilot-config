@@ -1,6 +1,7 @@
 ---
 description: Comprehensive workflow for large features spanning multiple repos - research, plan, then implement
-model: Claude Sonnet 4 (copilot)
+agent: mslearn-planning
+model: GPT-5.3-Codex (copilot)
 ---
 
 # Large Feature Workflow

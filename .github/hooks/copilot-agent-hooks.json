@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": ".github/hooks/scripts/session-start-log.sh",
+        "cwd": ".",
+        "timeoutSec": 10,
+        "comment": "Log session start events for Copilot CLI"
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": ".github/hooks/scripts/safety-guard.sh",
+        "powershell": ".github/hooks/scripts/safety-guard.ps1",
+        "cwd": ".",
+        "timeoutSec": 10,
+        "comment": "Block dangerous commands and protect critical branches/paths"
+      },
+      {
+        "type": "command",
+        "bash": ".github/hooks/scripts/pre-commit-gate.sh",
+        "powershell": ".github/hooks/scripts/pre-commit-gate.ps1",
+        "cwd": ".",
+        "timeoutSec": 300,
+        "comment": "Run repo-specific quality checks before allowing git commit"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": ".github/hooks/scripts/session-end-learnings.sh",
+        "powershell": ".github/hooks/scripts/session-end-learnings.ps1",
+        "cwd": ".",
+        "timeoutSec": 15,
+        "comment": "Log session end and write marker for session-learnings extraction"
+      }
+    ]
+  }
+}

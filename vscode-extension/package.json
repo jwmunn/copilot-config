@@ -1,8 +1,8 @@
 {
   "name": "mslearn-copilot-agents",
   "displayName": "MSLearn Copilot Agents",
-  "description": "Local VS Code extension that registers MSLearn GitHub Copilot agents as chat participants, enabling @agent-name usage in VS Code Chat."
-  "version": "0.1.0",
+  "description": "Local VS Code extension that registers MSLearn GitHub Copilot agents as chat participants, enabling @agent-name usage in VS Code Chat.",
+  "version": "0.2.0",
   "publisher": "mslearn",
   "engines": {
     "vscode": "^1.90.0"
@@ -46,6 +46,24 @@
         "name": "mslearn-test",
         "description": "Testing agent for test strategy and generation.",
         "isSticky": true
+      },
+      {
+        "id": "mslearn-codebase-locator",
+        "name": "mslearn-codebase-locator",
+        "description": "Find WHERE files, components, and patterns exist in the codebase.",
+        "isSticky": false
+      },
+      {
+        "id": "mslearn-codebase-analyzer",
+        "name": "mslearn-codebase-analyzer",
+        "description": "Analyze HOW specific code works - trace data flow and implementations.",
+        "isSticky": false
+      },
+      {
+        "id": "mslearn-codebase-pattern-finder",
+        "name": "mslearn-codebase-pattern-finder",
+        "description": "Find examples of specific patterns and conventions in the codebase.",
+        "isSticky": false
       }
     ],
     "commands": [
@@ -64,8 +82,8 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "prepackage": "npm run compile",
-    "package": "npx @vscode/vsce package --allow-missing-repository"
-    "install-local": "code --install-extension mslearn-copilot-agents-0.1.0.vsix"
+    "package": "npx @vscode/vsce package --allow-missing-repository",
+    "install-local": "code --install-extension mslearn-copilot-agents-0.2.0.vsix"
   },
   "devDependencies": {
     "@types/vscode": "^1.90.0",
