@@ -226,6 +226,14 @@ Configured in `.github/hooks/copilot-agent-hooks.json`, executed as shell script
 | `{ticketId}` | User input | `AB#123456` |
 | `{description}` | User input | `rating-system` |
 
+## Tool Guidance — Common Pitfalls
+
+| Scenario | What to do |
+|----------|------------|
+| GitHub URL returns 404 | The repo may be private. Prompt the user: "This returned a 404 — is this a private repo? If so, I don't have a GitHub PR MCP tool for private repos. Could you check the PR directly and share the details?" |
+| Need to search emails | Use `mcp_workiq_ask_work_iq` (see ADO work item instructions for details) |
+| ADO work item iteration fails (TF401347) | Omit `iterationPath` and let ADO default it |
+
 ## Execution Architecture
 
 Every interaction enters through one of four entry points, each with different context and autonomy levels.
