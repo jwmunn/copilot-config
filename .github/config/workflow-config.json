@@ -65,6 +65,17 @@
       "previewUrlPattern": null,
       "type": "deployment",
       "aliases": ["rendering-preview"]
+    },
+    "copilot-config": {
+      "defaultBranch": "main",
+      "preCommitCommand": null,
+      "buildCommand": null,
+      "testCommand": null,
+      "previewUrlPattern": null,
+      "type": "config",
+      "platform": "github",
+      "prUrlPattern": "https://github.com/jwmunn/copilot-config/pull/{PrNumber}",
+      "aliases": ["copilot-config"]
     }
   },
 
