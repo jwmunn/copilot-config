@@ -37,7 +37,7 @@ Use the work item creation tool with:
 - **title**: `<title>`
 - **assignedTo**: `{adoAssignee from config}`
 - **areaPath**: `{areaPath from config}`
-- **iterationPath**: `{iteration from config}`
+- **iterationPath**: `{iteration from config}` — ⚠️ If this fails with `TF401347: Invalid tree name`, omit iterationPath and let ADO use the default iteration. The configured iteration path may not exist as a valid iteration node.
 - **description**: `<description HTML>`
 
 To link the user story to a parent feature, use the work item link tool with:
@@ -53,7 +53,7 @@ Use the work item creation tool with:
 - **type**: `Task`
 - **title**: `<title>`
 - **areaPath**: `{areaPath from config}`
-- **iterationPath**: `{iteration from config}`
+- **iterationPath**: `{iteration from config}` — ⚠️ If this fails with `TF401347: Invalid tree name`, omit iterationPath and let ADO use the default iteration.
 
 Then link it to the parent user story with the work item link tool:
 - **project**: `{project}`
@@ -101,5 +101,29 @@ Use `mcp_microsoft_azu_wit_add_artifact_link` to link work items to branches, co
 - **project**: `{project}`
 - **linkType**: `Branch` | `Fixed in Commit` | `Pull Request` | `Build`
 - Plus the relevant identifier (`branchName`, `commitId`, `pullRequestId`, `buildId`)
+
+## Email and Communication Lookup
+
+When you need to search for or retrieve email content, use the **Work IQ MCP** tool:
+
+```
+mcp_workiq_ask_work_iq
+```
+
+- Pass a natural language question describing the email (subject, sender, date, etc.)
+- Work IQ can search across Outlook emails and return full body content, sender, recipients, and date
+- **Do NOT** attempt Microsoft Graph Mail API (`/v1.0/me/messages`) — Mail.Read scope is not authorized
+- **Do NOT** attempt `fetch_webpage` on Outlook URLs — requires authentication
+- **Do NOT** attempt Playwright browser navigation to Outlook — will be cancelled/blocked
+
+### Example
+
+```
+mcp_workiq_ask_work_iq(question="Find the email with subject 'Rendering issue for Course page' and return the full body content, sender, date, and recipients")
+```
+
+### Note on EULA
+
+Work IQ may require EULA acceptance on first use. If prompted, call `mcp_workiq_accept_eula` first.
 
 ````
