@@ -13,3 +13,7 @@ handoffs/*
 
 reviews/*
 !reviews/.gitkeep
+
+learnings/*
+!learnings/.gitkeep
+!learnings/README.md
