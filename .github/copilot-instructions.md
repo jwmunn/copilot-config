@@ -54,8 +54,7 @@ This repo contains GitHub Copilot workflow automation for Microsoft Learn platfo
 └── instructions/
     └── *.instructions.md            # Auto-loaded by applyTo file pattern
 .vscode/
-├── settings.json                    # Copilot instruction hooks (commit messages, review, test generation, PR description)
-└── mcp.json                         # Model Context Protocol configuration
+└── settings.json                    # Copilot instruction hooks (commit messages, review, test generation, PR description)
 agent-artifacts/                     # Output directory (not committed)
 ├── research/
 ├── plans/
