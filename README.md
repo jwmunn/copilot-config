@@ -97,8 +97,11 @@ The workflow configuration uses environment variables to avoid storing personal 
 | `USER_EMAIL` | Your Microsoft email | `jumunn@microsoft.com` |
 | `ADO_ASSIGNEE` | Default assignee for ADO items | `jumunn@microsoft.com` |
 | `ADO_AREA_PATH` | Your team's area path | `Engineering\POD\YourTeam` |
+| `ADO_ORGANIZATION` | Azure DevOps org URL | `https://dev.azure.com/ceapex` |
+| `ADO_PROJECT` | Azure DevOps project name | `Engineering` |
+| `ADO_SWE_ASSIGNEE` | SWE agent identity (GUID) | *(see .env.example)* |
 
-The workflow configuration in `.github/config/workflow-config.json` will automatically resolve these variables when used by agents and prompts.
+The workflow configuration in `.github/config/workflow-config.json` uses `${VAR_NAME}` placeholders that resolve from your `.env` file.
 
 ## System Architecture
 
@@ -172,15 +175,15 @@ graph LR
 
 | Type | Invocation | Context | Purpose |
 | ------ | ------------ | --------- | --------- |
-| **Prompts** | `/command` | Shared with chat | User-initiated multi-step workflows |
-| **Skills** | SKILL.md packages | On-demand | Self-contained single-purpose actions |
-| **Hooks** | Automatic | Minimal (auto-applied) | Copilot action instructions (commit, review, test) |
-| **Agents** | `@agent-name` | Isolated (own context) | Autonomous complex tasks |
-| **Sub-Agents** | Called by agents | Isolated | Focused sub-tasks (locate, analyze, find patterns) |
-| **Instructions** | Auto-loaded | Shared | Static rules by file pattern |
-| **Config** | Referenced | Minimal | Central settings |
+| **Prompts** | `/command` | On invoke · High | User-initiated multi-step workflows |
+| **Skills** | SKILL.md packages | Metadata auto, body on-demand · Low–Medium | Self-contained single-purpose actions |
+| **Hooks** | Automatic | Auto on Copilot action · Low | Copilot action instructions (commit, review, test) |
+| **Agents** | `@agent-name` | Isolated context · None on main | Autonomous complex tasks |
+| **Sub-Agents** | Called by agents | Isolated context · None on main | Focused sub-tasks (locate, analyze, find patterns) |
+| **Instructions** | Auto-loaded | Auto on file match · Medium | Static rules by file pattern |
+| **Config** | Referenced | On-demand · Low | Central settings |
 
-> **Prompts vs Skills**: Prompts use `.prompt.md` files with `mode: agent` for multi-step interactive workflows. Skills use the `SKILL.md` format in `.github/skills/{name}/` directories — self-contained packages with `name`/`description` frontmatter and optional `references/` for templates. Hooks are VS Code Copilot settings in `.vscode/settings.json` that apply automatically.
+> **Prompts vs Skills**: Prompts use `.prompt.md` files with frontmatter fields like `description`, `agent`, and `model` for multi-step interactive workflows. Skills use the `SKILL.md` format in `.github/skills/{name}/` directories — self-contained packages with `name`/`description` frontmatter and optional `references/` for templates. Hooks are VS Code Copilot settings in `.vscode/settings.json` that apply automatically.
 
 ## Workflow Selection
 
@@ -202,10 +205,10 @@ flowchart TD
     
     IMPL --> DONE{Done?}
     DONE --> |"Ready to ship"| SHIP["/mslearn-ship-it"]
-    DONE --> |"Stopping for now"| HO["/mslearn-create_handoff"]
+    DONE --> |"Stopping for now"| HO["/mslearn-create-handoff"]
     
     HO --> LATER([Resume later])
-    LATER --> RESUME["/mslearn-resume_handoff"]
+    LATER --> RESUME["/mslearn-resume-handoff"]
 ```
 
 ## Artifact Flow
@@ -247,19 +250,28 @@ copilot-config/
 │   │   ├── mslearn-small-feature.prompt.md
 │   │   ├── mslearn-large-feature.prompt.md
 │   │   ├── mslearn-parity-feature.prompt.md
+│   │   ├── mslearn-create-plan.prompt.md
+│   │   ├── mslearn-implement-plan.prompt.md
+│   │   ├── mslearn-research-codebase.prompt.md
 │   │   ├── mslearn-ship-it.prompt.md
 │   │   ├── mslearn-review-it.prompt.md
 │   │   ├── mslearn-update-plan.prompt.md
-│   │   ├── mslearn-create_plan.prompt.md
-│   │   ├── mslearn-implement_plan.prompt.md
-│   │   ├── mslearn-research_codebase.prompt.md
-│   │   └── mslearn-resume_handoff.prompt.md
+│   │   ├── mslearn-resume-handoff.prompt.md
+│   │   ├── mslearn-create-handoff.prompt.md
+│   │   ├── mslearn-create-ado-workitems.prompt.md
+│   │   ├── mslearn-assign-swe.prompt.md
+│   │   ├── mslearn-explain-pr.prompt.md
+│   │   ├── mslearn-pre-commit.prompt.md
+│   │   ├── mslearn-prune-worktree.prompt.md
+│   │   └── mslearn-create-worktree.prompt.md
 │   ├── skills/                  # Self-contained single-purpose actions
 │   │   ├── create-ado-workitems/   # SKILL.md + references/templates.md
 │   │   ├── assign-swe/            # SKILL.md
 │   │   ├── create-handoff/        # SKILL.md + references/template.md
+│   │   ├── create-worktree/       # SKILL.md
 │   │   ├── explain-pr/            # SKILL.md + references/template.md
-│   │   └── pre-commit/            # SKILL.md
+│   │   ├── pre-commit/            # SKILL.md
+│   │   └── prune-worktree/        # SKILL.md
 │   └── instructions/            # Auto-loaded rules
 │       └── azure-devops-workitems.instructions.md
 ├── .vscode/
@@ -298,12 +310,11 @@ Diagrams help agents understand systems **without re-reading files**.
 
 ### Configuration
 
-Central config at `.github/config/workflow-config.json`:
+Two-layer config: `.env` for personal settings, `workflow-config.json` for shared structure.
 
-- User settings (alias, email)
-- Azure DevOps settings
-- Repository-specific commands (build, test, pre-commit)
-- Preview URL patterns
+- **`.env`**: alias, email, ADO assignee, area path, org, project (see [Environment Configuration](#environment-configuration))
+- **`workflow-config.json`**: `${ENV_VAR}` placeholders, repo commands, preview URLs, artifact patterns
+- **Setup**: `cp .env.example .env` then edit with your values
 
 ## Commands Reference
 
@@ -314,13 +325,20 @@ Central config at `.github/config/workflow-config.json`:
 | `/mslearn-small-feature` | Quick feature implementation (< 2 hours, single repo) |
 | `/mslearn-large-feature` | Complex multi-repo feature with research and planning |
 | `/mslearn-parity-feature` | Port feature between repos |
-| `/mslearn-create_plan` | Create detailed implementation plans |
-| `/mslearn-implement_plan` | Execute plan phases with verification |
-| `/mslearn-research_codebase` | Document codebase without evaluation |
+| `/mslearn-create-plan` | Create detailed implementation plans |
+| `/mslearn-implement-plan` | Execute plan phases with verification |
+| `/mslearn-research-codebase` | Document codebase without evaluation |
 | `/mslearn-ship-it` | Commit, push, create PR |
 | `/mslearn-review-it` | Review PR branch |
 | `/mslearn-update-plan` | Sync plan with codebase status |
-| `/mslearn-resume_handoff` | Resume from handoff document |
+| `/mslearn-resume-handoff` | Resume from handoff document |
+| `/mslearn-create-handoff` | Create a session handoff document |
+| `/mslearn-create-ado-workitems` | Create ADO work items from a plan |
+| `/mslearn-assign-swe` | Assign GitHub SWE to a work item |
+| `/mslearn-explain-pr` | Generate PR explanation documentation |
+| `/mslearn-pre-commit` | Run repository quality checks |
+| `/mslearn-prune-worktree` | Remove worktrees and clean up resources |
+| `/mslearn-create-worktree` | Create worktree with auth, deps, and agent symlinks |
 
 ### Skills (self-contained SKILL.md packages in `.github/skills/`)
 
@@ -329,8 +347,10 @@ Central config at `.github/config/workflow-config.json`:
 | `create-ado-workitems` | `.github/skills/create-ado-workitems/` | Create ADO items from plan |
 | `assign-swe` | `.github/skills/assign-swe/` | Assign GitHub SWE to work item |
 | `create-handoff` | `.github/skills/create-handoff/` | Save session context for later |
+| `create-worktree` | `.github/skills/create-worktree/` | Create worktree with auth and npm install |
 | `explain-pr` | `.github/skills/explain-pr/` | Generate PR explanation document |
 | `pre-commit` | `.github/skills/pre-commit/` | Run quality gate checks |
+| `prune-worktree` | `.github/skills/prune-worktree/` | Remove worktrees and workspace files |
 
 ### Hooks (automatic, configured in `.vscode/settings.json`)
 
@@ -348,7 +368,9 @@ Central config at `.github/config/workflow-config.json`:
 | `@mslearn-planning` | Create implementation plans |
 | `@mslearn-implementation` | Execute plan phases |
 | `@mslearn-code-review` | Review code changes |
-| `@mslearn-test` | Test strategy and generation |
+| `@mslearn-codebase-locator` | Locate files and components |
+| `@mslearn-codebase-analyzer` | Analyze implementation details |
+| `@mslearn-codebase-pattern-finder` | Find existing patterns to follow |
 
 ## Documentation
 

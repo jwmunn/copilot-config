@@ -1,6 +1,7 @@
 ---
 description: Resume work from handoff document with context analysis and validation
-mode: agent
+agent: mslearn-implementation
+model: Claude Opus 4.6 (fast mode) (Preview) (copilot)
 ---
 
 # Resume work from a handoff document

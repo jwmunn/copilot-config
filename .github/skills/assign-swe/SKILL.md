@@ -14,14 +14,19 @@ Load from `copilot-config/.github/config/workflow-config.json`:
 - `azureDevOps.sweAssignee`, `azureDevOps.organization`, `azureDevOps.project`
 - Repository-specific `buildCommand`, `testCommand` for verification steps
 
+## Prerequisites
+
+- Call `activate_work_item_management` to access work item tools
+
 ## Process
 
 ### 1. Validate Work Item
 
-```bash
-az boards work-item show --id {WORK_ITEM_ID} --org {org} --project {project} \
-    --query "{id:id, title:fields.\"System.Title\", state:fields.\"System.State\"}"
-```
+Use the work item get tool:
+- **project**: `{project}`
+- **id**: `{WORK_ITEM_ID}`
+
+Verify the response includes `id`, `title`, and `state`.
 
 ### 2. Prepare Instructions
 
@@ -54,12 +59,11 @@ See `{example file:line}` for implementation pattern.
 
 ### 3. Assign and Tag
 
-```bash
-az boards work-item update --id {WORK_ITEM_ID} \
-    --assigned-to "{sweAssignee}" \
-    --fields "System.Tags=swe-assigned" \
-    --org {org} --project {project}
-```
+Use the work item update tool:
+- **project**: `{project}`
+- **id**: `{WORK_ITEM_ID}`
+- **assignedTo**: `{sweAssignee}`
+- **tags**: `swe-assigned`
 
 Add the formatted instructions to the work item description.
 
@@ -90,8 +94,11 @@ When `--from-plan {path} --phases 1,3,5` is specified:
 
 ## Monitoring
 
-```bash
-az boards query --wiql "SELECT [System.Id], [System.Title], [System.State] \
-    FROM workitems WHERE [System.Tags] CONTAINS 'swe-assigned' \
-    AND [System.AreaPath] = '{areaPath}'" --org {org} --project {project}
+Use the work item query tool with WIQL:
+
+```wiql
+SELECT [System.Id], [System.Title], [System.State]
+FROM workitems
+WHERE [System.Tags] CONTAINS 'swe-assigned'
+  AND [System.AreaPath] = '{areaPath}'
 ```

@@ -1,6 +1,7 @@
 ---
 description: Document codebase as-is without evaluation or recommendations
-mode: agent
+agent: mslearn-research
+model: GPT-5.3-Codex (copilot)
 ---
 
 # Research Codebase

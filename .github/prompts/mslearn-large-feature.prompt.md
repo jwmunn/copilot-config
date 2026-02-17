@@ -1,6 +1,7 @@
 ---
 description: Comprehensive workflow for large features spanning multiple repos - research, plan, then implement
-mode: agent
+agent: mslearn-planning
+model: GPT-5.3-Codex (copilot)
 ---
 
 # Large Feature Workflow

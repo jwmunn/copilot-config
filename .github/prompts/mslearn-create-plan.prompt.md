@@ -1,6 +1,7 @@
 ---
 description: Create implementation plans with thorough research (no thoughts directory)
-mode: agent
+agent: mslearn-planning
+model: GPT-5.3-Codex (copilot)
 ---
 
 # Implementation Plan

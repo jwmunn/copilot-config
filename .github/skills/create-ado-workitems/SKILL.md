@@ -9,8 +9,7 @@ Create User Stories and Tasks in Azure DevOps from an implementation plan, linke
 
 ## Prerequisites
 
-- Azure CLI with DevOps extension
-- Authenticated via `az login`
+- Call `activate_work_item_management` to access work item creation and linking tools
 - Implementation plan in `copilot-config/agent-artifacts/plans/`
 
 ## Configuration
@@ -31,10 +30,9 @@ Prompt the user for:
 - Plan path (or list available plans from `copilot-config/agent-artifacts/plans/`)
 - Parent Feature ID to link items under
 
-Validate the parent feature exists:
-```bash
-az boards work-item show --id {FEATURE_ID} --org {org} --project {project}
-```
+Validate the parent feature exists using the work item get tool:
+- **project**: `{project}`
+- **id**: `{FEATURE_ID}`
 
 ### 2. Propose Work Item Structure
 
@@ -52,50 +50,43 @@ Present the hierarchy for user approval before creating anything:
 
 ### 3. Create User Stories
 
-For each phase, create a User Story linked to the parent Feature:
+For each phase, create a User Story using the work item creation tool:
+- **project**: `{project}`
+- **type**: `User Story`
+- **title**: `Phase {N}: {Phase Name}`
+- **assignedTo**: `{adoAssignee}`
+- **areaPath**: `{areaPath}`
+- **iterationPath**: `{iteration}`
+- **description**: `{see references/templates.md}`
 
-```bash
-STORY_ID=$(az boards work-item create \
-    --type "User Story" \
-    --title "Phase {N}: {Phase Name}" \
-    --assigned-to "{adoAssignee}" \
-    --area "{areaPath}" \
-    --iteration "{iteration}" \
-    --description "{see references/templates.md}" \
-    --org {org} --project {project} \
-    --query "id" -o tsv)
-
-az boards work-item relation add \
-    --id $STORY_ID --relation-type "Parent" \
-    --target-id {FEATURE_ID} --org {org}
-```
+Then link to the parent Feature using the work item link tool:
+- **project**: `{project}`
+- **id**: `{STORY_ID}` (from creation response)
+- **type**: `parent`
+- **targetId**: `{FEATURE_ID}`
 
 ### 4. Create Tasks
 
-For each change within a phase, create a Task linked to its User Story:
+For each change within a phase, create a Task using the work item creation tool:
+- **project**: `{project}`
+- **type**: `Task`
+- **title**: `{file}: {change description}`
+- **areaPath**: `{areaPath}`
+- **iterationPath**: `{iteration}`
+- **description**: `{see references/templates.md}`
 
-```bash
-TASK_ID=$(az boards work-item create \
-    --type "Task" \
-    --title "{file}: {change description}" \
-    --area "{areaPath}" --iteration "{iteration}" \
-    --description "{see references/templates.md}" \
-    --org {org} --project {project} \
-    --query "id" -o tsv)
-
-az boards work-item relation add \
-    --id $TASK_ID --relation-type "Parent" \
-    --target-id $STORY_ID --org {org}
-```
+Then link to the parent User Story using the work item link tool:
+- **project**: `{project}`
+- **id**: `{TASK_ID}` (from creation response)
+- **type**: `parent`
+- **targetId**: `{STORY_ID}`
 
 ### 5. Tag SWE Candidates
 
-For phases marked as SWE-suitable in the plan:
-
-```bash
-az boards work-item update --id $STORY_ID \
-    --fields "System.Tags=swe-candidate" --org {org}
-```
+For phases marked as SWE-suitable in the plan, use the work item update tool:
+- **project**: `{project}`
+- **id**: `{STORY_ID}`
+- **tags**: `swe-candidate`
 
 ### 6. Output Summary
 

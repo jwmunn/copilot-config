@@ -1,6 +1,7 @@
 ---
 description: Analyze a feature in one repo and create a plan for implementing it in another repo
-mode: agent
+agent: mslearn-planning
+model: GPT-5.3-Codex (copilot)
 ---
 
 # Parity Feature Workflow

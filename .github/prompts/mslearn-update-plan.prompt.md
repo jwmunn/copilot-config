@@ -1,6 +1,7 @@
 ---
 description: Review codebase status and update implementation plan with current progress
-mode: agent
+agent: mslearn-planning
+model: GPT-5.3-Codex (copilot)
 ---
 
 # Update Plan Workflow

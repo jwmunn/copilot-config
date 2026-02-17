@@ -1,6 +1,7 @@
 ---
 description: Commit, push, create PR with proper template and preview URLs
-mode: agent
+agent: mslearn-implementation
+model: Claude Opus 4.6 (fast mode) (Preview) (copilot)
 ---
 
 # Ship It Workflow

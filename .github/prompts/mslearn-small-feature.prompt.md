@@ -1,6 +1,7 @@
 ---
 description: Quick workflow for small, well-defined features - analyze and implement in one session
-mode: agent
+agent: mslearn-implementation
+model: Claude Opus 4.6 (fast mode) (Preview) (copilot)
 ---
 
 # Small Feature Workflow

@@ -1,0 +1,69 @@
+<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gritty Noise Filter -->
+    <filter id="noise" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.80" numOctaves="3" result="noise"/>
+      <feColorMatrix type="saturate" values="0" result="desaturatedNoise"/>
+      <feComponentTransfer>
+         <feFuncA type="linear" slope="0.4"/>
+      </feComponentTransfer>
+      <feComposite operator="in" in="desaturatedNoise" in2="SourceGraphic" result="compositeNoise"/>
+      <feBlend mode="overlay" in="compositeNoise" in2="SourceGraphic"/>
+    </filter>
+
+    <!-- Neon Glow Filter -->
+    <filter id="neonGlow" height="300%" width="300%" x="-75%" y="-75%">
+      <feMorphology operator="dilate" radius="4" in="SourceAlpha" result="thicken" />
+      <feGaussianBlur in="thicken" stdDeviation="15" result="blurred" />
+      <feFlood flood-color="#ff0055" result="glowColor" />
+      <feComposite in="glowColor" in2="blurred" operator="in" result="softGlow_colored" />
+      <feMerge>
+        <feMergeNode in="softGlow_colored"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+     <!-- Grainy Texture Overlay -->
+    <pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse">
+       <filter id="static">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/>
+       </filter>
+       <rect width="100" height="100" filter="url(#static)" opacity="0.5"/>
+    </pattern>
+
+    <!-- Gradient for the face -->
+    <linearGradient id="grittyNeon" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffb6c1;stop-opacity:1" /> <!-- bright pink -->
+      <stop offset="50%" style="stop-color:#ff4d4d;stop-opacity:1" /> <!-- red/orange -->
+      <stop offset="100%" style="stop-color:#800000;stop-opacity:1" /> <!-- dark red -->
+    </linearGradient>
+  </defs>
+
+  <!-- Dark Background Rectangle to make the noise visible (optional, remove if you want transparency) -->
+  <!-- <rect width="800" height="800" fill="#3a0000" /> -->
+
+  <g transform="translate(400, 480)" text-anchor="middle" font-family="Courier New, monospace" font-weight="bold" font-size="650">
+    
+    <!-- Deep Extrusion (Darker/Redder) -->
+    <!-- Using multiple semi-transparent layers to build up 'grit' -->
+    <g filter="url(#noise)">
+        <text x="40" y="40" fill="#220000" opacity="0.8">@</text>
+        <text x="35" y="35" fill="#330000" opacity="0.8">@</text>
+        <text x="30" y="30" fill="#440000" opacity="0.8">@</text>
+        <text x="25" y="25" fill="#550000" opacity="0.9">@</text>
+        <text x="20" y="20" fill="#660000" opacity="0.9">@</text>
+        <text x="15" y="15" fill="#770000">@</text>
+        <text x="10" y="10" fill="#880000">@</text>
+        <text x="5" y="5" fill="#990000">@</text>
+    </g>
+
+    <!-- Main Face with Glow and Noise -->
+    <g filter="url(#neonGlow)">
+        <text x="0" y="0" fill="url(#grittyNeon)" stroke="#ff9999" stroke-width="3" filter="url(#noise)">@</text>
+    </g>
+    
+    <!-- Extra grain overlay on top of everything -->
+     <text x="0" y="0" fill="url(#grain)" style="mix-blend-mode: overlay" opacity="0.4" pointer-events="none">@</text>
+
+  </g>
+</svg>

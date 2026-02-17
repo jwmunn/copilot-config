@@ -8,11 +8,11 @@ This document describes the GitHub Copilot workflow automation system for the Mi
 
 | Type | Purpose | Context Impact | When to Use |
 |------|---------|----------------|-------------|
-| **Instructions** | Static rules auto-loaded by file patterns | Low (loaded automatically) | Coding standards, patterns that always apply |
-| **Agents** | Autonomous tasks with their own context | Isolated (separate context) | Complex research, analysis, multi-step autonomous work |
-| **Prompts** | User-initiated multi-step workflow orchestration | Shared (uses main context) | Interactive workflows, orchestrating agents |
-| **Skills** | Self-contained single-purpose actions (`SKILL.md` packages) | On-demand | Specific actions: ADO items, handoffs, SWE assignment |
-| **Hooks** | Automated Copilot instructions for specific actions | Minimal (auto-applied) | Commit messages, code review, test generation |
+| **Instructions** | Static rules auto-loaded by file patterns | Auto on file match · Medium | Coding standards, patterns that always apply |
+| **Agents** | Autonomous tasks with their own context | Isolated context · None on main | Complex research, analysis, multi-step autonomous work |
+| **Prompts** | User-initiated multi-step workflow orchestration | On `/command` invoke · High | Interactive workflows, orchestrating agents |
+| **Skills** | Self-contained single-purpose actions (`SKILL.md` packages) | Metadata auto, body on-demand · Low–Medium | Specific actions: ADO items, handoffs, SWE assignment |
+| **Hooks** | Automated Copilot instructions for specific actions | Auto on Copilot action · Low | Commit messages, code review, test generation |
 
 > **Note**: Skills use the `SKILL.md` format in `.github/skills/{name}/` directories with `name` and `description` frontmatter. Each skill is a self-contained package that may include `references/` for templates and domain knowledge. Hooks are configured as VS Code Copilot settings in `.vscode/settings.json`.
 
@@ -31,13 +31,19 @@ copilot-config/
 │   │   ├── mslearn-small-feature.prompt.md      # Quick feature implementation
 │   │   ├── mslearn-large-feature.prompt.md      # Complex multi-repo features
 │   │   ├── mslearn-parity-feature.prompt.md     # Port features between repos
+│   │   ├── mslearn-create-plan.prompt.md        # Create implementation plans
+│   │   ├── mslearn-implement-plan.prompt.md     # Implement from plans
+│   │   ├── mslearn-research-codebase.prompt.md  # Research codebase
 │   │   ├── mslearn-ship-it.prompt.md            # Commit, push, create PR
 │   │   ├── mslearn-review-it.prompt.md          # Review PR branches
 │   │   ├── mslearn-update-plan.prompt.md        # Sync plan with codebase
-│   │   ├── mslearn-create_plan.prompt.md        # Create implementation plans
-│   │   ├── mslearn-implement_plan.prompt.md     # Implement from plans
-│   │   ├── mslearn-research_codebase.prompt.md  # Research codebase
-│   │   └── mslearn-resume_handoff.prompt.md     # Resume from handoffs
+│   │   ├── mslearn-resume-handoff.prompt.md     # Resume from handoffs
+│   │   ├── mslearn-create-handoff.prompt.md     # Create handoff document
+│   │   ├── mslearn-create-ado-workitems.prompt.md # Create ADO work items
+│   │   ├── mslearn-assign-swe.prompt.md         # Assign SWE to work item
+│   │   ├── mslearn-explain-pr.prompt.md         # Explain PR changes
+│   │   ├── mslearn-pre-commit.prompt.md         # Run quality checks
+│   │   └── mslearn-prune-worktree.prompt.md     # Remove worktrees
 │   └── skills/                          # Self-contained single-purpose actions (SKILL.md)
 │       ├── create-ado-workitems/
 │       │   ├── SKILL.md                         # Create ADO items from plan
@@ -50,8 +56,12 @@ copilot-config/
 │       ├── explain-pr/
 │       │   ├── SKILL.md                         # Generate PR explanation document
 │       │   └── references/template.md           # PR explanation template
-│       └── pre-commit/
-│           └── SKILL.md                         # Run quality gate checks
+│       ├── create-worktree/
+│       │   └── SKILL.md                         # Create git worktrees
+│       ├── pre-commit/
+│       │   └── SKILL.md                         # Run quality gate checks
+│       └── prune-worktree/
+│           └── SKILL.md                         # Remove worktrees and workspace files
 ├── .vscode/
 │   └── settings.json                   # Copilot hooks (commit, review, test)
 ├── vscode-extension/                   # MSLearn Copilot Agents extension
@@ -64,31 +74,55 @@ copilot-config/
 
 ## Configuration
 
-All workflow configuration is centralized in `.github/config/workflow-config.json`.
+Configuration is split into two layers:
 
-### Key Configuration Sections
+1. **`.env` file** — Personal settings (alias, email, ADO paths). Not committed to Git.
+2. **`.github/config/workflow-config.json`** — Shared structure with `${ENV_VAR}` placeholders resolved from `.env`.
+
+### Initial Setup
+
+```bash
+cp .env.example .env
+# Edit .env with your personal information
+```
+
+### Environment Variables (`.env`)
+
+| Variable | Description | Example |
+|----------|-------------|----------|
+| `USER_ALIAS` | Your Microsoft alias | `jumunn` |
+| `USER_EMAIL` | Your Microsoft email | `jumunn@microsoft.com` |
+| `ADO_ASSIGNEE` | Default work item assignee | `jumunn@microsoft.com` |
+| `ADO_AREA_PATH` | Your team's area path | `Engineering\POD\YourTeam` |
+| `ADO_ORGANIZATION` | ADO org URL | `https://dev.azure.com/ceapex` |
+| `ADO_PROJECT` | ADO project name | `Engineering` |
+| `ADO_SWE_ASSIGNEE` | SWE agent identity | *(GUID from .env.example)* |
+
+### Shared Config (`workflow-config.json`)
+
+The JSON config references env vars via `${VAR_NAME}` syntax:
 
 ```json
 {
   "user": {
-    "alias": "your-alias",
-    "email": "your-email@microsoft.com"
+    "alias": "${USER_ALIAS}",
+    "email": "${USER_EMAIL}"
   },
   "azureDevOps": {
-    "organization": "https://dev.azure.com/ceapex",
-    "project": "Engineering",
-    "areaPath": "Engineering\\POD\\Your-Pod",
-    "sweAssignee": "GitHub-Copilot-SWE-ID"
+    "organization": "${ADO_ORGANIZATION}",
+    "project": "${ADO_PROJECT}",
+    "areaPath": "${ADO_AREA_PATH}"
   },
   "repositories": {
     "docs-ui": {
       "defaultBranch": "develop",
-      "preCommitCommand": "npx wireit betterer precommit --cache",
-      "previewUrlPattern": "https://ppe.preview.learn.microsoft-int.com/?pr={PrNumber}"
+      "preCommitCommand": "npx wireit betterer precommit --cache"
     }
   }
 }
 ```
+
+Repository-specific settings (build commands, preview URLs) live in the shared config. Personal settings resolve from your `.env`.
 
 **Note**: Repos are detected from your workspace. If you reference a repo not in your workspace, you'll be prompted to add it.
 
@@ -101,7 +135,7 @@ All workflow configuration is centralized in `.github/config/workflow-config.jso
 **Use when**: Quick, well-scoped features in a single repo (< 2 hours)
 
 ```
-/small-feature
+/mslearn-small-feature
 
 "Add a loading spinner to the search results component"
 ```
@@ -115,7 +149,7 @@ All workflow configuration is centralized in `.github/config/workflow-config.jso
 
 **Example**:
 ```
-User: /small-feature Add error handling to the API client
+User: /mslearn-small-feature Add error handling to the API client
 
 Agent:
 → Scans packages/scripts/src/api/ for patterns
@@ -132,7 +166,7 @@ Agent:
 **Use when**: Complex features spanning multiple repos (> 1 day)
 
 ```
-/large-feature
+/mslearn-large-feature
 
 "Implement a new content rating system that stores ratings in ContentService 
 and displays them in docs-ui"
@@ -147,7 +181,7 @@ and displays them in docs-ui"
 
 **Example**:
 ```
-User: /large-feature Implement user progress tracking across modules
+User: /mslearn-large-feature Implement user progress tracking across modules
 
 Phase 1: Research
 → @research: Analyze docs-ui for UI patterns
@@ -164,7 +198,7 @@ Phase 2: Planning
 → Identifies: 3 phases, 2 suitable for SWE
 → ⏸️ PAUSED - User reviews plan artifact
 
-User: /create-ado-workitems
+User: /mslearn-create-ado-workitems
       Plan: copilot-config/agent-artifacts/plans/2026-02-04-progress-tracking-plan.md
       Parent Feature ID: 12345
 
@@ -181,7 +215,7 @@ Phase 4: Implementation
 → @implementation: Execute Phase 3
 
 Phase 5: Ship
-→ /ship-it (for each repo)
+→ /mslearn-ship-it (for each repo)
 ```
 
 ---
@@ -191,7 +225,7 @@ Phase 5: Ship
 **Use when**: Porting a feature from one repo to another
 
 ```
-/parity-feature
+/mslearn-parity-feature
 
 "Port the article navigation component from docs-ui to Learn.SharedComponents"
 ```
@@ -205,7 +239,7 @@ Phase 5: Ship
 
 **Example**:
 ```
-User: /parity-feature Port the collapsible TOC from docs-ui to SharedComponents
+User: /mslearn-parity-feature Port the collapsible TOC from docs-ui to SharedComponents
 
 → Check workspace: Both repos present ✓
 
@@ -240,8 +274,8 @@ User: @implementation Execute parity plan
 **Use when**: Syncing a plan with actual implementation progress
 
 ```
-/update-plan
-/update-plan copilot-config/agent-artifacts/plans/2026-02-04-rating-plan.md
+/mslearn-update-plan
+/mslearn-update-plan copilot-config/agent-artifacts/plans/2026-02-04-rating-plan.md
 ```
 
 **Flow**:
@@ -252,7 +286,7 @@ User: @implementation Execute parity plan
 
 **Example**:
 ```
-User: /update-plan
+User: /mslearn-update-plan
 
 Plan: 2026-02-04-rating-plan.md
 
@@ -279,7 +313,7 @@ Resume implementation:
 **Use when**: Ready to commit, push, and create a PR
 
 ```
-/ship-it
+/mslearn-ship-it
 ```
 
 **Flow**:
@@ -292,10 +326,10 @@ Resume implementation:
 
 **Example**:
 ```
-User: /ship-it
+User: /mslearn-ship-it
 
 Pre-flight:
-- Branch: jumunn/add-rating-component
+- Branch: {alias}/add-rating-component
 - Repo: docs-ui
 - Changes: 5 files
 
@@ -306,10 +340,10 @@ Quality Gate:
 Git Operations:
 → git add -A
 → git commit -m "feat: add rating component for articles"
-→ git push -u origin jumunn/add-rating-component
+→ git push -u origin {alias}/add-rating-component
 
 PR Created:
-→ PR #4567: https://dev.azure.com/ceapex/Engineering/_git/docs-ui/pullrequest/4567
+→ PR #4567: {ADO_ORGANIZATION}/{ADO_PROJECT}/_git/docs-ui/pullrequest/4567
 → Preview: https://ppe.preview.learn.microsoft-int.com/?pr=4567
 ```
 
@@ -320,9 +354,9 @@ PR Created:
 **Use when**: Need to review a PR branch
 
 ```
-/review-it
-/review-it PR-4567
-/review-it --focus accessibility
+/mslearn-review-it
+/mslearn-review-it PR-4567
+/mslearn-review-it --focus accessibility
 ```
 
 **Flow**:
@@ -333,9 +367,9 @@ PR Created:
 
 **Example**:
 ```
-User: /review-it
+User: /mslearn-review-it
 
-Reviewing: jumunn/add-rating-component
+Reviewing: {alias}/add-rating-component
 
 → @code-review analyzing 5 changed files...
 
@@ -361,48 +395,36 @@ Review saved: agent-artifacts/reviews/2026-02-04-4567-rating-review.md
 
 ---
 
-### 7. Multi-Agent Parallel Work
+### 7. Worktree Setup and Cleanup
 
-**Use when**: Working on multiple tasks simultaneously
+**Use when**: You need isolated branches for parallel work, or want to clean up worktrees.
 
 ```
-/multi-agent-startup
-
-Tasks:
-1. Add loading states to search
-2. Implement filter component  
-3. Add pagination to results
+/mslearn-create-worktree
+/mslearn-prune-worktree
 ```
 
-**Flow**:
-1. Analyze tasks for conflicts
-2. Create git worktrees
-3. Provide startup commands
-4. Manage parallel development
+**Create flow**:
+1. Determine repository and worktree path from config
+2. Create worktree (handle existing local/remote branches or create new)
+3. Authenticate with Azure and install npm dependencies
+4. Link copilot agents via symlink/junction
+5. Create and open VS Code `.code-workspace` file
+
+**Prune flow**:
+1. List non-main worktrees
+2. Select worktree(s) to remove
+3. Confirm cleanup actions
+4. Remove worktrees, workspace files, and optional local branches
 
 **Example**:
 ```
-User: /multi-agent-startup [3 tasks listed above]
+User: /mslearn-prune-worktree
 
-Conflict Analysis:
-✅ Task 1 & Task 2: No overlap (different components)
-⚠️ Task 2 & Task 3: Minor overlap (both touch results container)
-   → Grouped in same worktree
-
-Worktrees Created:
-1. docs-ui-wt-search-loading
-   Branch: jumunn/search-loading
-   Tasks: Task 1
-   Start: cd ../docs-ui-wt-search-loading && code .
-
-2. docs-ui-wt-filter-pagination  
-   Branch: jumunn/filter-pagination
-   Tasks: Task 2, Task 3
-   Start: cd ../docs-ui-wt-filter-pagination && code .
-
-Merge Order:
-1. search-loading (independent)
-2. filter-pagination (independent)
+→ Lists worktrees with status
+→ Warns if selected worktree has uncommitted changes
+→ Removes selected worktrees and linked workspace artifacts
+→ Reports per-worktree cleanup results
 ```
 
 ---
@@ -525,8 +547,8 @@ Automatically applies project test conventions when Copilot generates tests:
 When resuming work:
 
 ```
-/mslearn-resume_handoff CAS-123
-/mslearn-resume_handoff copilot-config/agent-artifacts/handoffs/CAS-123/2026-02-04_...md
+/mslearn-resume-handoff CAS-123
+/mslearn-resume-handoff copilot-config/agent-artifacts/handoffs/CAS-123/2026-02-04_...md
 ```
 
 Loads context and proposes next actions.
@@ -584,18 +606,20 @@ graph TB
 | New feature, single repo | `/mslearn-small-feature` or `/mslearn-large-feature` | Workflow |
 | Cross-repo feature | `/mslearn-large-feature` | Workflow |
 | Copy feature to another repo | `/mslearn-parity-feature` | Workflow |
-| Create implementation plan | `/mslearn-create_plan` | Workflow |
-| Implement from plan | `/mslearn-implement_plan` | Workflow |
-| Research codebase | `/mslearn-research_codebase` | Workflow |
+| Create implementation plan | `/mslearn-create-plan` | Workflow |
+| Implement from plan | `/mslearn-implement-plan` | Workflow |
+| Research codebase | `/mslearn-research-codebase` | Workflow |
 | Sync plan with codebase | `/mslearn-update-plan` | Workflow |
 | Review PR branch | `/mslearn-review-it` | Workflow |
 | Ready to submit PR | `/mslearn-ship-it` | Workflow |
-| Create ADO work items | `create-ado-workitems` skill | Skill |
-| Assign SWE to work item | `assign-swe` skill | Skill |
-| Document PR changes | `explain-pr` skill | Skill |
-| Run quality checks | `pre-commit` skill | Skill |
-| Stopping for the day | `create-handoff` skill | Skill |
-| Starting new session | `/mslearn-resume_handoff` | Workflow |
+| Create ADO work items | `/mslearn-create-ado-workitems` | Workflow |
+| Assign SWE to work item | `/mslearn-assign-swe` | Workflow |
+| Document PR changes | `/mslearn-explain-pr` | Workflow |
+| Run quality checks | `/mslearn-pre-commit` | Workflow |
+| Stopping for the day | `/mslearn-create-handoff` | Workflow |
+| Create worktree for branch | `/mslearn-create-worktree` | Workflow |
+| Clean up worktrees | `/mslearn-prune-worktree` | Workflow |
+| Starting new session | `/mslearn-resume-handoff` | Workflow |
 | Commit message format | *(automatic)* | Hook |
 | Code review standards | *(automatic)* | Hook |
 | Test generation conventions | *(automatic)* | Hook |
@@ -618,9 +642,6 @@ When to use agents vs doing work directly:
 
 ## Configuration Reference
 
-See [workflow-config.json](.github/config/workflow-config.json) for:
-- User settings
-- Azure DevOps configuration  
-- Repository-specific settings
-- Preview URL patterns
-- Build/test commands
+See [.env.example](.env.example) for personal settings and [workflow-config.json](.github/config/workflow-config.json) for shared config:
+- **`.env`**: User alias, email, ADO assignee, area path, org, project, SWE assignee
+- **`workflow-config.json`**: Repository build/test/preview commands, artifact patterns, quality gates

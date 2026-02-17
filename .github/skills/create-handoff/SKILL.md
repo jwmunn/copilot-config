@@ -17,15 +17,27 @@ Save to `copilot-config/agent-artifacts/handoffs/{ticket-dir}/{filename}.md` whe
 
 ## Process
 
-### 1. Gather Context
+### 1. Extract Session Learnings
+
+Before gathering context, run the session-learnings analysis to capture any self-healing improvements from this session:
+
+1. Read `.github/skills/session-learnings/SKILL.md` and follow its process
+2. Analyze the conversation for correction signals (user fixes, workarounds, repeated explanations)
+3. If learnings are found, present them and ask the user to approve high-confidence patches
+4. Apply approved changes before creating the handoff
+5. Reference the learnings artifact in the handoff document
+
+If no learnings are found, note that in the handoff and continue.
+
+### 2. Gather Context
 
 Collect from the current session:
 - Current git branch, commit hash, repository
 - Tasks worked on and their completion status
 - Files changed and key learnings
-- Artifacts produced (plans, research docs, etc.)
+- Artifacts produced (plans, research docs, learnings docs, etc.)
 
-### 2. Write the Document
+### 3. Write the Document
 
 Use the template in [references/template.md](references/template.md). Key principles:
 
@@ -34,7 +46,7 @@ Use the template in [references/template.md](references/template.md). Key princi
 - **Avoid excessive code snippets** — prefer `path/to/file.ts:line` references
 - **More information, not less** — the template is a minimum, always add more if needed
 
-### 3. Respond with Resume Command
+### 4. Respond with Resume Command
 
 After creating the document, respond with:
 
