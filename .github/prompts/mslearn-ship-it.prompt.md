@@ -97,13 +97,35 @@ if [ "$BRANCH" = "$DEFAULT_BRANCH" ]; then
     echo "Error: Cannot ship from $DEFAULT_BRANCH. Create a feature branch first."
     exit 1
 fi
+```
 
+**⛔ HARD BLOCK**: If the current branch IS the default branch, you MUST:
+1. Create a feature branch using the naming pattern from config: `{alias}/{description}`
+2. Move the unpushed commit(s) to the new branch (e.g., `git checkout -b {new-branch}`)
+3. Switch back to the default branch and reset it to match origin: `git checkout {default} && git reset --hard origin/{default}`
+4. Switch to the feature branch and continue the workflow from there
+
+**NEVER offer "push directly to main/develop" as an option.** This is not negotiable, even for config-only repos with no CI. All changes must go through a PR.
+
+```bash
 # Push to origin
 git push -u origin $BRANCH
 ```
 
 ### Step 5: Create PR
 
+Determine the platform from config (`repositories.{repo}.platform`). Default is `ado` if not specified.
+
+**For GitHub repos** (`platform: "github"`):
+```bash
+gh pr create \
+    --title "{PR title}" \
+    --body "{PR description}" \
+    --base $DEFAULT_BRANCH \
+    --head $BRANCH
+```
+
+**For Azure DevOps repos** (`platform: "ado"` or unspecified):
 ```bash
 # Create PR using Azure DevOps CLI
 az repos pr create \
