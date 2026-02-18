@@ -109,26 +109,17 @@ The workflow configuration in `.github/config/workflow-config.json` uses `${VAR_
 graph TB
     subgraph "User Commands"
         P["/prompts"]
-        A["@agents"]
     end
     
     subgraph "Orchestration Layer"
         P --> WF["Workflow Prompts<br/>(small-feature, large-feature, ship-it, etc.)"]
     end
     
-    subgraph "Autonomous Agents"
-        A --> RA["@research<br/>Deep analysis"]
-        A --> PA["@planning<br/>Create plans"]
-        A --> IA["@implementation<br/>Execute plans"]
-        A --> CR["@code-review<br/>Review PRs"]
-    end
-    
-    subgraph "Sub-Agents (called by main agents)"
-        RA --> CL["codebase-locator"]
-        RA --> CA["codebase-analyzer"]
-        RA --> CP["codebase-pattern-finder"]
-        PA --> CL
-        PA --> CA
+    subgraph "Agent Personas (referenced via prompt frontmatter)"
+        WF --> RA["mslearn-research"]
+        WF --> PA["mslearn-planning"]
+        WF --> IA["mslearn-implementation"]
+        WF --> CR["mslearn-code-review"]
     end
     
     subgraph "Artifacts (agent-artifacts/)"
@@ -154,11 +145,6 @@ graph TB
 graph LR
     subgraph "Invoked by User"
         P["Prompts (/slash)"]
-        AG["Agents (@mention)"]
-    end
-    
-    subgraph "Called by Agents"
-        SUB["Sub-Agents"]
     end
     
     subgraph "Auto-Loaded"
@@ -166,8 +152,7 @@ graph LR
         C["Config"]
     end
     
-    P --> |orchestrates| AG
-    AG --> |spawns| SUB
+    P --> |references| AG["Agent Personas"]
     I --> |applies to| AG
     C --> |configures| P
     C --> |configures| AG
@@ -178,8 +163,7 @@ graph LR
 | **Prompts** | `/command` | On invoke · High | User-initiated multi-step workflows |
 | **Skills** | SKILL.md packages | Metadata auto, body on-demand · Low–Medium | Self-contained single-purpose actions |
 | **Hooks** | Automatic | Auto on Copilot action · Low | Copilot action instructions (commit, review, test) |
-| **Agents** | `@agent-name` | Isolated context · None on main | Autonomous complex tasks |
-| **Sub-Agents** | Called by agents | Isolated context · None on main | Focused sub-tasks (locate, analyze, find patterns) |
+| **Agent Personas** | Prompt `agent:` frontmatter | Loaded with prompt execution · Medium | Shared tool/instruction configs for prompt workflows |
 | **Instructions** | Auto-loaded | Auto on file match · Medium | Static rules by file pattern |
 | **Config** | Referenced | On-demand · Low | Central settings |
 
@@ -362,15 +346,12 @@ Two-layer config: `.env` for personal settings, `workflow-config.json` for share
 
 ### Agents
 
-| Agent | Description |
+| Agent Persona | Description |
 | ------- | ------------- |
-| `@mslearn-research` | Deep codebase analysis |
-| `@mslearn-planning` | Create implementation plans |
-| `@mslearn-implementation` | Execute plan phases |
-| `@mslearn-code-review` | Review code changes |
-| `@mslearn-codebase-locator` | Locate files and components |
-| `@mslearn-codebase-analyzer` | Analyze implementation details |
-| `@mslearn-codebase-pattern-finder` | Find existing patterns to follow |
+| `mslearn-research` | Deep codebase research and documentation |
+| `mslearn-planning` | Create implementation plans |
+| `mslearn-implementation` | Execute plan phases |
+| `mslearn-code-review` | Review code changes |
 
 ## Documentation
 

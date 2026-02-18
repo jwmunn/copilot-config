@@ -624,19 +624,19 @@ graph TB
 | Code review standards | *(automatic)* | Hook |
 | Test generation conventions | *(automatic)* | Hook |
 
-### Agent Delegation
+### Research and Execution Approach
 
-When to use agents vs doing work directly:
+Use direct tools for discovery and reserve personas for full workflows:
 
-| Task | Approach |
-|------|----------|
-| Find files | @codebase-locator |
-| Understand implementation | @codebase-analyzer |
-| Find patterns to follow | @codebase-pattern-finder |
-| Deep research | @research |
-| Create detailed plan | @planning |
-| Implement code | @implementation or direct |
-| Review PR | @code-review |
+| Task | Preferred approach |
+|------|--------------------|
+| Find files | `semantic_search`, `file_search`, `grep_search` |
+| Understand implementation | `read_file` + targeted `grep_search` |
+| Find patterns to follow | parallel `grep_search` + `semantic_search` |
+| Deep research workflow | `/mslearn-research-codebase` (uses `mslearn-research` persona) |
+| Create detailed plan workflow | `/mslearn-create-plan` (uses `mslearn-planning` persona) |
+| Implement from plan workflow | `/mslearn-implement-plan` or `/mslearn-small-feature` (uses `mslearn-implementation` persona) |
+| Review PR workflow | `/mslearn-review-it` (uses `mslearn-code-review` persona) |
 
 ---
 

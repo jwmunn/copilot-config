@@ -7,14 +7,11 @@ This repo contains GitHub Copilot workflow automation for Microsoft Learn platfo
 ```
 .github/
 ├── copilot-instructions.md          # Auto-loaded every session. Exact filename required.
-├── agents/                          # Autonomous agents invoked via @name
-│   ├── mslearn-research.agent.md
-│   ├── mslearn-planning.agent.md
+├── agents/                          # Agent personas referenced by prompts via agent: frontmatter
 │   ├── mslearn-implementation.agent.md
-│   ├── mslearn-code-review.agent.md
-│   ├── mslearn-codebase-locator.agent.md
-│   ├── mslearn-codebase-analyzer.agent.md
-│   └── mslearn-codebase-pattern-finder.agent.md
+│   ├── mslearn-planning.agent.md
+│   ├── mslearn-research.agent.md
+│   └── mslearn-code-review.agent.md
 ├── prompts/                         # Workflows invoked via /command
 │   ├── mslearn-small-feature.prompt.md
 │   ├── mslearn-large-feature.prompt.md
@@ -84,84 +81,66 @@ agent-artifacts/                     # Output directory (not committed)
 - **Frontmatter-named**: Agents and Skills use frontmatter `name` as display/invocation identity
 - **Filename-named**: Prompts use filename stem directly (e.g., `mslearn-ship-it.prompt.md` → `/mslearn-ship-it`)
 
-## Agents (`@mention`)
+## Design Philosophy
 
-Agents run in **isolated context** for autonomous, multi-step work. They cannot see main chat history.
+> *"The most successful implementations weren't using complex frameworks. Instead, they were building with simple, composable patterns."*
+> — [Anthropic: Building Effective Agents](https://anthropic.com/research/building-effective-agents)
 
-### Main Agents
+**Start simple. Add complexity only when it demonstrably improves outcomes.**
 
-| Agent | Purpose |
-|-------|---------|
-| `@mslearn-research` | Deep codebase research and documentation |
-| `@mslearn-planning` | Create detailed implementation plans |
-| `@mslearn-implementation` | Execute plans step by step |
-| `@mslearn-code-review` | Review code for quality and patterns |
+Anthropic distinguishes two architectural approaches:
 
-### Sub-Agents (invoked by main agents and prompts)
+- **Workflows** — LLMs orchestrated through predefined code paths. Predictable, consistent, lower cost.
+- **Agents** — LLMs dynamically direct their own processes and tool usage. Flexible, autonomous, higher cost.
 
-| Agent | Purpose |
-|-------|---------|
-| `@mslearn-codebase-locator` | Find WHERE files and components exist |
-| `@mslearn-codebase-analyzer` | Analyze HOW specific code works |
-| `@mslearn-codebase-pattern-finder` | Find examples of existing patterns |
+Most tasks should be workflows. Use agents only when the task is genuinely open-ended and steps cannot be predicted in advance.
 
-### Agent Hierarchy
+### Workflow Patterns in This Repo
 
-```
-@mslearn-research ──┬── @mslearn-codebase-locator
-                    ├── @mslearn-codebase-analyzer
-                    └── @mslearn-codebase-pattern-finder
+Our prompts implement several of Anthropic's documented workflow patterns:
 
-@mslearn-planning ──┬── @mslearn-codebase-locator
-                    └── @mslearn-codebase-analyzer
+| Pattern | Description | Examples |
+|---------|-------------|----------|
+| **Prompt chaining** | Sequential steps, each processing previous output | `/mslearn-ship-it` (stage → commit → push → PR) |
+| **Routing** | Classify input, direct to specialized handler | `/mslearn-small-feature` vs `/mslearn-large-feature` |
+| **Orchestrator-workers** | Central LLM breaks down tasks, delegates, synthesizes | `/mslearn-research-codebase`, `/mslearn-create-plan` |
+| **Evaluator-optimizer** | Generate + evaluate in a feedback loop | `/mslearn-review-it` |
 
-@mslearn-implementation ── (uses plan artifacts directly)
+## When to Use Each Artifact Type
 
-@mslearn-code-review ── (standalone)
-```
+### Prompts (`/command`) — Workflows with predefined steps
 
-### Agent Frontmatter
+**Use prompts when:**
 
-```yaml
----
-name: mslearn-{name}
-description: {concise purpose}
-tools:
-  - read
-  - search
-  - execute
-  - agent       # only if agent spawns sub-agents
----
-```
+- The task has a **known sequence of steps** that can be defined in advance
+- The workflow needs access to the **user's chat context**
+- The process benefits from **interactive human feedback** during execution
+- You're **orchestrating** other tools and skills
 
-## Workflows (`/command`)
+**Current prompts fall into two categories:**
 
-Prompts run in **shared context** with user chat. They orchestrate agents and skills for multi-step interactive processes.
+| Category | Prompts | Description |
+|----------|---------|------------|
+| **Orchestration workflows** | `/mslearn-small-feature`, `/mslearn-large-feature`, `/mslearn-parity-feature`, `/mslearn-create-plan`, `/mslearn-implement-plan`, `/mslearn-research-codebase`, `/mslearn-ship-it`, `/mslearn-review-it`, `/mslearn-update-plan`, `/mslearn-resume-handoff` | Multi-step interactive workflows with real orchestration logic |
+| **Skill entry points** | `/mslearn-pre-commit`, `/mslearn-create-handoff`, `/mslearn-assign-swe`, `/mslearn-create-ado-workitems`, `/mslearn-explain-pr`, `/mslearn-prune-worktree`, `/mslearn-create-worktree`, `/mslearn-session-learnings` | Thin wrappers providing `/command` discoverability + agent persona for a skill |
 
-| Command | Purpose |
-|---------|---------|
-| `/mslearn-small-feature` | Quick implementation (< 2 hours) |
-| `/mslearn-large-feature` | Multi-repo, multi-phase features |
-| `/mslearn-parity-feature` | Port feature between repos |
-| `/mslearn-create-plan` | Create implementation plans |
-| `/mslearn-implement-plan` | Execute plan phases |
-| `/mslearn-research-codebase` | Document codebase as-is |
-| `/mslearn-ship-it` | Commit, push, create PR |
-| `/mslearn-review-it` | Review PR branch |
-| `/mslearn-update-plan` | Sync plan with codebase |
-| `/mslearn-resume-handoff` | Resume from handoff document |
-| `/mslearn-create-handoff` | Create session handoff document |
-| `/mslearn-create-ado-workitems` | Create ADO work items from plan |
-| `/mslearn-assign-swe` | Assign GitHub SWE to work item |
-| `/mslearn-explain-pr` | Generate PR explanation document |
-| `/mslearn-pre-commit` | Pre-commit quality gate |
-| `/mslearn-prune-worktree` | Remove worktrees and clean up resources |
-| `/mslearn-create-worktree` | Create worktree with auth, deps, and agent symlinks |
-| `/mslearn-session-learnings` | Extract learnings and self-heal agents/prompts/skills |
+> **Note on skill entry points**: These prompts exist for discoverability (users type `/command`) and to set the `agent:` persona. The actual logic lives in the corresponding skill. This is acceptable when the prompt adds routing value; avoid it when you could just reference the skill directly from another prompt.
 
-## Skills (`.github/skills/`)
+### Skills (`.github/skills/`) — Reusable, self-contained capabilities
 
-Self-contained single-purpose action packages. Each has a `SKILL.md` (exact name) with optional `references/` directory for templates.
+Use skills when:
+
+- The action is **single-purpose** with clear inputs and outputs
+- It needs **embedded resources** (templates, scripts, reference docs)
+- It's **reused by multiple prompts** or agents
+- It benefits from **progressive disclosure** (load context only when activated)
+
+**Skill design rules** (from [Octane best practices](https://github.com/azure-core/octane/blob/main/docs/best-practices.md)):
+
+- Keep `SKILL.md` **under 500 lines** — put detailed docs in `references/`
+- **Progressive loading**: metadata (~100 tokens) → instructions (<5000 tokens) → resources (on-demand)
+- Include **what** the skill does AND **when** to use it in the description
+- Keep file references **one level deep** from SKILL.md
 
 | Skill | Purpose |
 |-------|---------|
@@ -174,14 +153,55 @@ Self-contained single-purpose action packages. Each has a `SKILL.md` (exact name
 | `prune-worktree` | Remove worktrees and workspace files |
 | `session-learnings` | Extract session learnings and self-heal automation files |
 
-## When to Use Agents vs Prompts vs Skills
+### Agents (`@name`) — Autonomous, open-ended exploration
 
-| Use **Agent** when: | Use **Prompt** when: | Use **Skill** when: |
-|---------------------|----------------------|---------------------|
-| Task requires deep autonomous research | Multi-step interactive workflow | Single focused action |
-| Need isolated context from chat history | Need to see user's chat history | Template-driven output |
-| Spawning parallel sub-agents | Orchestrating agents and skills | Running quality gates |
-| Producing research/review artifacts | Complex feature implementation | Creating/assigning artifacts |
+Use agents when:
+
+- The task requires **dynamic decision-making** (steps cannot be predicted in advance)
+- The LLM needs to **operate for many turns** independently
+- The task needs **isolated context** (separate from chat history)
+- **Higher cost and latency** are acceptable for better task performance
+- There's sufficient **trust in the LLM's decision-making** for the domain
+
+> **Current state**: Four persona agents exist in this repo — `mslearn-implementation`, `mslearn-planning`, `mslearn-research`, and `mslearn-code-review`. These serve as **shared persona/tool configurations** referenced by prompts via `agent:` frontmatter, not as standalone autonomous agents. They define which tools a prompt has access to and set behavioral instructions for the role.
+>
+> Three sub-agents (codebase-locator, codebase-analyzer, codebase-pattern-finder) were intentionally removed as they created deep agent hierarchies. Their functionality is handled directly by the main agents using search and read tools.
+
+Create dedicated `.agent.md` files when:
+- Multiple prompts share the same **tool configuration** and **behavioral instructions**
+- The persona definition provides genuine value as a reusable configuration
+- The agent definition keeps SKILL.md and prompt files focused on their specific workflows
+
+**When NOT to create an agent:**
+- The task has a predictable sequence of steps → use a **prompt**
+- The task is a single focused action → use a **skill**
+- You're tempted to create a sub-agent hierarchy → use **direct tool calls** within the existing agent (Anthropic's orchestrator-workers pattern with parallelization)
+
+### Instructions (`.instructions.md`) — Passive context enrichment
+
+Use instructions when:
+
+- Rules should apply **automatically** whenever specific files are open
+- No user invocation is needed — they **augment** the LLM's knowledge
+- Context is **file-pattern specific** (e.g., TypeScript standards for `*.ts` files)
+
+### Hooks — Automatic guardrails and gates
+
+Use hooks when:
+
+- Actions must run **without user invocation**
+- You need to **enforce safety constraints** (block destructive commands)
+- You need to **gate actions** (quality checks before commit)
+- You need to **capture telemetry** (session end logging)
+
+### Anti-Patterns to Avoid
+
+| Anti-Pattern | Why It's Bad | Do This Instead |
+|-------------|-------------|-----------------|
+| **Premature agent use** | Agents add latency and cost; autonomous decision-making compounds errors | Use a prompt with predefined steps when the workflow is known |
+| **Monolithic prompts** | Templates, scripts, and reference docs bloat the prompt and waste context | Extract reusable components to skills with progressive disclosure |
+| **Deep agent hierarchies** | Sub-agents add abstraction layers that obscure prompts and responses | Use parallelization within a single prompt (orchestrator-workers pattern) |
+| **Over-abstraction** | Extra layers make it harder to debug; incorrect assumptions about what's under the hood cause errors | Keep the architecture as simple as possible; build with basic components |
 
 ## Copilot Hooks
 
@@ -245,114 +265,80 @@ Every interaction enters through one of four entry points, each with different c
 graph LR
     subgraph "Entry Points"
         EP1["👤 /command<br/>(Prompt)"]
-        EP2["👤 @agent<br/>(Agent)"]
         EP3["⚙️ Hook<br/>(Automatic)"]
         EP4["📄 Instructions<br/>(Auto-loaded)"]
     end
 
     EP1 -->|"shared chat context"| EXEC["Execution"]
-    EP2 -->|"isolated context"| EXEC
     EP3 -->|"event-triggered"| EXEC
     EP4 -->|"file-pattern match"| CTX["Context Enrichment"]
     CTX --> EXEC
 ```
 
-### Prompt → Agent → Sub-Agent Wiring
+### Prompt Architecture
 
-Each prompt declares an `agent:` in its frontmatter, which determines the agent persona used for execution. Agents may spawn sub-agents for parallel research.
+Prompts declare an `agent:` persona in frontmatter, which loads the corresponding `.agent.md` file for tool access and behavioral instructions. Some prompts contain full orchestration logic; others delegate to skills.
 
 ```mermaid
 graph TB
-    subgraph "Prompts (user runs /command)"
-        subgraph "Planning Agent Prompts"
-            P_CP["/mslearn-create-plan"]
-            P_UP["/mslearn-update-plan"]
-            P_LF["/mslearn-large-feature"]
-            P_PF["/mslearn-parity-feature"]
-            P_ADO["/mslearn-create-ado-workitems"]
-            P_SWE["/mslearn-assign-swe"]
-            P_CH["/mslearn-create-handoff"]
-        end
-        subgraph "Implementation Agent Prompts"
-            P_IP["/mslearn-implement-plan"]
-            P_SF["/mslearn-small-feature"]
-            P_SI["/mslearn-ship-it"]
-            P_RH["/mslearn-resume-handoff"]
-            P_PC["/mslearn-pre-commit"]
-            P_PW["/mslearn-prune-worktree"]
-            P_CW["/mslearn-create-worktree"]
-            P_SL["/mslearn-session-learnings"]
-        end
-        subgraph "Research Agent Prompts"
-            P_RC["/mslearn-research-codebase"]
-            P_EP["/mslearn-explain-pr"]
-        end
-        subgraph "Code Review Agent Prompts"
-            P_RI["/mslearn-review-it"]
-        end
+    subgraph "Agent Personas (shared tool + instruction configs)"
+        A_IM["mslearn-implementation<br/>tools: read, edit, search,<br/>execute, todo"]
+        A_PL["mslearn-planning<br/>tools: read, edit, search,<br/>execute, todo"]
+        A_RE["mslearn-research<br/>tools: read, edit, search,<br/>execute, web"]
+        A_CR["mslearn-code-review<br/>tools: read, edit,<br/>search, execute"]
     end
 
-    subgraph "Main Agents"
-        A_PL["@mslearn-planning<br/>tools: read, edit, search,<br/>execute, agent, todo"]
-        A_IM["@mslearn-implementation<br/>tools: read, edit, search,<br/>execute, todo"]
-        A_RE["@mslearn-research<br/>tools: read, edit, search,<br/>execute, agent, web"]
-        A_CR["@mslearn-code-review<br/>tools: read, edit,<br/>search, execute"]
+    subgraph "Orchestration Prompts (contain workflow logic)"
+        P_SF["/mslearn-small-feature"]
+        P_LF["/mslearn-large-feature"]
+        P_PF["/mslearn-parity-feature"]
+        P_CP["/mslearn-create-plan"]
+        P_IP["/mslearn-implement-plan"]
+        P_RC["/mslearn-research-codebase"]
+        P_SI["/mslearn-ship-it"]
+        P_RI["/mslearn-review-it"]
+        P_UP["/mslearn-update-plan"]
+        P_RH["/mslearn-resume-handoff"]
     end
 
-    subgraph "Sub-Agents"
-        SA_L["@mslearn-codebase-locator<br/>tools: read, search"]
-        SA_A["@mslearn-codebase-analyzer<br/>tools: read, search"]
-        SA_P["@mslearn-codebase-pattern-finder<br/>tools: read, search"]
+    P_SF & P_IP & P_SI & P_RH -->|"agent:"| A_IM
+    P_LF & P_PF & P_CP & P_UP -->|"agent:"| A_PL
+    P_RC -->|"agent:"| A_RE
+    P_RI -->|"agent:"| A_CR
+
+    subgraph "Skill Entry Points (thin wrappers for discoverability)"
+        P_PC["/mslearn-pre-commit"]
+        P_CH["/mslearn-create-handoff"]
+        P_ADO["/mslearn-create-ado-workitems"]
+        P_SWE["/mslearn-assign-swe"]
+        P_EP["/mslearn-explain-pr"]
+        P_PW["/mslearn-prune-worktree"]
+        P_CW["/mslearn-create-worktree"]
+        P_SL["/mslearn-session-learnings"]
     end
 
-    P_CP & P_UP & P_LF & P_PF & P_ADO & P_SWE & P_CH --> A_PL
-    P_IP & P_SF & P_SI & P_RH & P_PC & P_PW & P_CW & P_SL --> A_IM
-    P_RC & P_EP --> A_RE
-    P_RI --> A_CR
-
-    A_PL -->|"sub-agent"| SA_L
-    A_PL -->|"sub-agent"| SA_A
-    A_RE -->|"sub-agent"| SA_L
-    A_RE -->|"sub-agent"| SA_A
-    A_RE -->|"sub-agent"| SA_P
-```
-
-### Prompt → Skill References
-
-Some prompts reference skills (read `SKILL.md` for instructions) or other prompts (suggest as next steps).
-
-```mermaid
-graph LR
-    subgraph "Skill-Backed Prompts"
-        P_ADO2["/mslearn-create-ado-workitems"]
-        P_SWE2["/mslearn-assign-swe"]
-        P_CH2["/mslearn-create-handoff"]
-        P_CW2["/mslearn-create-worktree"]
-        P_EP2["/mslearn-explain-pr"]
-        P_PC2["/mslearn-pre-commit"]
-        P_PW2["/mslearn-prune-worktree"]
-        P_SL2["/mslearn-session-learnings"]
-    end
-
-    subgraph "Skills"
+    subgraph "Skills (reusable capabilities)"
+        SK_PC["pre-commit"]
+        SK_CH["create-handoff"]
         SK_ADO["create-ado-workitems"]
         SK_SWE["assign-swe"]
-        SK_CH["create-handoff"]
-        SK_CW["create-worktree"]
         SK_EP["explain-pr"]
-        SK_PC["pre-commit"]
         SK_PW["prune-worktree"]
+        SK_CW["create-worktree"]
         SK_SL["session-learnings"]
     end
 
-    P_ADO2 -->|"reads SKILL.md"| SK_ADO
-    P_SWE2 -->|"reads SKILL.md"| SK_SWE
-    P_CH2 -->|"reads SKILL.md"| SK_CH
-    P_CW2 -->|"reads SKILL.md"| SK_CW
-    P_EP2 -->|"reads SKILL.md"| SK_EP
-    P_PC2 -->|"reads SKILL.md"| SK_PC
-    P_PW2 -->|"reads SKILL.md"| SK_PW
-    P_SL2 -->|"reads SKILL.md"| SK_SL
+    P_PC -->|"reads SKILL.md"| SK_PC
+    P_CH -->|"reads SKILL.md"| SK_CH
+    P_ADO -->|"reads SKILL.md"| SK_ADO
+    P_SWE -->|"reads SKILL.md"| SK_SWE
+    P_EP -->|"reads SKILL.md"| SK_EP
+    P_PW -->|"reads SKILL.md"| SK_PW
+    P_CW -->|"reads SKILL.md"| SK_CW
+    P_SL -->|"reads SKILL.md"| SK_SL
+
+    P_SI -.->|"calls before commit"| SK_PC
+    P_CH -.->|"calls first"| SK_SL
 ```
 
 ### Hooks (Automatic Entry Points)
@@ -418,11 +404,24 @@ Instructions enrich context automatically when matching files are open. They don
 
 ## Adding New Components
 
-**New Agent**: Create `.github/agents/{name}.agent.md` with frontmatter: `name`, `description`, `tools`
-
 **New Prompt**: Create `.github/prompts/{name}.prompt.md` with frontmatter: `description`, `agent`, `model`
+- Use for **multi-step interactive workflows** with predefined steps (Anthropic's workflow patterns)
+- If the prompt just delegates to a skill, consider whether the `/command` discoverability is worth the extra abstraction layer
 
-**New Skill**: Create `.github/skills/{name}/SKILL.md` with frontmatter: `name`, `description`. Add optional `references/` for templates. Keep under 500 lines.
+**New Skill**: Create `.github/skills/{name}/SKILL.md` with frontmatter: `name`, `description`. Add optional `references/` for templates.
+- Use for **single-purpose, reusable actions** with clear inputs/outputs
+- Keep SKILL.md **under 500 lines** — put detailed docs in `references/`
+- Include **what** the skill does AND **when** to use it in the description
+- Follow progressive disclosure: metadata → instructions → resources (on-demand)
+
+**New Agent**: Create `.github/agents/{name}.agent.md` with frontmatter: `name`, `description`, `tools`
+- Use **only** when the task is genuinely **open-ended** and steps cannot be predicted in advance
+- Before creating an agent, ask: "Can this be a prompt with predefined steps?" — if yes, use a prompt
+- Agents add **latency and cost**; autonomous decision-making can **compound errors**
+- Test extensively before deploying — agents need guardrails (hooks) and human checkpoints
+
+**New Instruction**: Create `.github/instructions/{name}.instructions.md` with frontmatter: `applyTo` glob pattern
+- Use for **passive context enrichment** that should apply whenever matching files are open
 
 **New Instruction Hook**: Add to `.vscode/settings.json` under `github.copilot.chat.*`
 

@@ -47,18 +47,19 @@ Then wait for the user's input.
    - **CRITICAL**: DO NOT spawn sub-tasks before reading these files yourself in the main context
    - **NEVER** read files partially - if a file is mentioned, read it completely
 
-2. **Spawn initial research tasks to gather context**:
-   Before asking the user any questions, use specialized agents to research in parallel:
+2. **Conduct initial research to gather context**:
+   Before asking the user any questions, use search and read tools directly to research in parallel:
 
-   - Use the **codebase-locator** agent to find all files related to the ticket/task
-   - Use the **codebase-analyzer** agent to understand how the current implementation works
+   - Use `semantic_search` to find all files related to the ticket/task
+   - Use `grep_search` to find exact references, imports, and patterns
+   - Use `read_file` to understand how the current implementation works
    - If a Linear ticket is mentioned, use the `/linear` skill to get full ticket details
 
-   These agents will:
+   This direct research will:
    - Find relevant source files, configs, and tests
-   - Identify the specific directories to focus on (e.g., if JobService is mentioned, they'll focus on JobService/)
+   - Identify the specific directories to focus on
    - Trace data flow and key functions
-   - Return detailed explanations with file:line references
+   - Provide detailed file:line references
 
 3. **Read all files identified by research tasks**:
    - After research tasks complete, read ALL files they identified as relevant
@@ -100,28 +101,28 @@ After getting initial clarifications:
 
 2. **Create a research todo list** using TodoWrite to track exploration tasks
 
-3. **Spawn parallel sub-tasks for comprehensive research**:
-   - Create multiple Task agents to research different aspects concurrently
-   - Use the right agent for each type of research:
+3. **Conduct parallel research for comprehensive discovery**:
+   - Run multiple search and read operations concurrently to investigate different aspects:
 
    **For deeper investigation:**
-   - **codebase-locator** - To find more specific files (e.g., "find all files that handle [specific component]")
-   - **codebase-analyzer** - To understand implementation details (e.g., "analyze how [system] works")
-   - **codebase-pattern-finder** - To find similar features we can model after
+   - `semantic_search` — To find conceptually related files (e.g., "find all files that handle [specific component]")
+   - `grep_search` — To find exact patterns, imports, and references
+   - `read_file` — To understand implementation details of specific files
+   - `file_search` — To find similar features we can model after
 
    **For related tickets:**
    - Use the `/linear` skill to search for similar issues or past implementations
 
-   Each agent knows how to:
-   - Find the right files and code patterns
-   - Identify conventions and patterns to follow
-   - Look for integration points and dependencies
-   - Return specific file:line references
-   - Find tests and examples
+   Direct tool usage:
+   - Finds the right files and code patterns
+   - Identifies conventions and patterns to follow
+   - Reveals integration points and dependencies
+   - Returns specific file:line references
+   - Finds tests and examples
 
-3. **Wait for ALL sub-tasks to complete** before proceeding
+4. **Wait for ALL research to complete** before proceeding
 
-4. **Present findings and design options**:
+5. **Present findings and design options**:
    ```
    Based on my research, here's what I found:
 
@@ -304,7 +305,7 @@ After structure approval:
 
 3. **Be Thorough**:
    - Read all context files COMPLETELY before planning
-   - Research actual code patterns using parallel sub-tasks
+   - Research actual code patterns using parallel tool calls
    - Include specific file paths and line numbers
    - Write measurable success criteria with clear automated vs manual distinction
    - Use Go tooling directly: `go build ./...`, `go test ./...`
@@ -379,41 +380,27 @@ After structure approval:
 - Maintain backwards compatibility
 - Include migration strategy
 
-## Sub-task Spawning Best Practices
+## Research Best Practices
 
-When spawning research sub-tasks:
+When conducting codebase research:
 
-1. **Spawn multiple tasks in parallel** for efficiency
-2. **Each task should be focused** on a specific area
-3. **Provide detailed instructions** including:
-   - Exactly what to search for
-   - Which directories to focus on
-   - What information to extract
-   - Expected output format
-4. **Be EXTREMELY specific about directories**:
-   - If the ticket mentions "DocService", specify `DocService/` directory
-   - If it mentions "JobService", specify `JobService/` directory
-   - If it mentions "LLMWorker", specify `LLMWorker/` directory
-   - If it mentions "Frontend", specify `Frontend/` directory
-   - Include the full path context in your prompts
-5. **Specify read-only tools** to use
-6. **Request specific file:line references** in responses
-7. **Wait for all tasks to complete** before synthesizing
-8. **Verify sub-task results**:
-   - If a sub-task returns unexpected results, spawn follow-up tasks
-   - Cross-check findings against the actual codebase
-   - Don't accept results that seem incorrect
-
-Example of spawning multiple tasks:
-```python
-# Spawn these tasks concurrently:
-tasks = [
-    Task("Research database schema", db_research_prompt),
-    Task("Find API patterns", api_research_prompt),
-    Task("Investigate UI components", ui_research_prompt),
-    Task("Check test patterns", test_research_prompt)
-]
-```
+1. **Run multiple searches in parallel** for efficiency
+2. **Each search should be focused** on a specific aspect
+3. **Use the right tool for each task**:
+   - `semantic_search` for conceptual matches
+   - `grep_search` for exact strings and patterns
+   - `file_search` for locating files by name
+   - `read_file` for understanding implementations
+4. **Be specific about directories**:
+   - If the ticket mentions "DocService", search within `DocService/` directory
+   - If it mentions "JobService", focus on `JobService/` directory
+   - Use `includePattern` parameter in grep_search for targeted results
+5. **Request specific file:line references** in your notes
+6. **Complete all research before synthesizing**
+7. **Verify findings**:
+   - If a search returns unexpected results, run follow-up searches
+   - Cross-check findings by reading the actual files
+   - Don't accept assumptions — verify with code
 
 ## Example Interaction Flow
 

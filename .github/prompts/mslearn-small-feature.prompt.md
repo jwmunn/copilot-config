@@ -30,10 +30,10 @@ Quick analysis:
 - Patterns needed: {what to look for}
 ```
 
-Use **codebase-locator** to find relevant files quickly:
-- Where similar functionality exists
-- What files will need modification
-- What patterns to follow
+Use search tools directly to find relevant files quickly:
+- `semantic_search` for conceptually similar functionality
+- `grep_search` for exact patterns, imports, and references
+- `read_file` on the most relevant matches to understand patterns to follow
 
 ### Step 2: Mini-Plan (Mental Model)
 
@@ -97,5 +97,5 @@ Load from `copilot-config/.github/config/workflow-config.json`:
 
 - If scope grows during implementation, stop and switch to `/large-feature`
 - If blocked by unclear requirements, ask rather than assume
-- If pattern matching is complex, use **codebase-pattern-finder** agent
+- If pattern matching is complex, run parallel `grep_search` queries to find multiple examples
 
