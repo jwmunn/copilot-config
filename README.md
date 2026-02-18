@@ -113,6 +113,7 @@ graph TB
     
     subgraph "Orchestration Layer"
         P --> WF["Workflow Prompts<br/>(small-feature, large-feature, ship-it, etc.)"]
+        WF --> |delegates to| SK["Skills<br/>(pre-commit, create-handoff, etc.)"]
     end
     
     subgraph "Agent Personas (referenced via prompt frontmatter)"
@@ -120,6 +121,12 @@ graph TB
         WF --> PA["mslearn-planning"]
         WF --> IA["mslearn-implementation"]
         WF --> CR["mslearn-code-review"]
+    end
+    
+    subgraph "Automatic (no user invocation)"
+        HK_I["Instruction Hooks<br/>(.vscode/settings.json)<br/>commit msg · code review · test gen"]
+        HK_A["Agent Lifecycle Hooks<br/>(.github/hooks/)<br/>safety guard · pre-commit gate · session logging"]
+        INS["Instructions<br/>(.github/instructions/)<br/>auto-loaded by file pattern"]
     end
     
     subgraph "Artifacts (agent-artifacts/)"
@@ -131,12 +138,11 @@ graph TB
     
     subgraph "Configuration"
         CFG["workflow-config.json"]
-        INS["instructions/*.md"]
     end
     
     WF --> CFG
-    PA --> CFG
-    IA --> CFG
+    HK_A --> |reads| CFG
+    INS --> |enriches| WF
 ```
 
 ## Component Types
@@ -144,30 +150,40 @@ graph TB
 ```mermaid
 graph LR
     subgraph "Invoked by User"
-        P["Prompts (/slash)"]
+        P["Prompts (/command)"]
     end
     
-    subgraph "Auto-Loaded"
+    subgraph "Used by Prompts"
+        AG["Agent Personas"]
+        SK["Skills (SKILL.md)"]
+    end
+    
+    subgraph "Automatic"
         I["Instructions"]
+        HI["Instruction Hooks"]
+        HA["Agent Lifecycle Hooks"]
         C["Config"]
     end
     
-    P --> |references| AG["Agent Personas"]
-    I --> |applies to| AG
+    P --> |"agent: frontmatter"| AG
+    P --> |"reads SKILL.md"| SK
+    I --> |"enriches context"| P
+    HI --> |"shapes output"| P
+    HA --> |"guards actions"| P
     C --> |configures| P
-    C --> |configures| AG
 ```
 
 | Type | Invocation | Context | Purpose |
 | ------ | ------------ | --------- | --------- |
 | **Prompts** | `/command` | On invoke · High | User-initiated multi-step workflows |
 | **Skills** | SKILL.md packages | Metadata auto, body on-demand · Low–Medium | Self-contained single-purpose actions |
-| **Hooks** | Automatic | Auto on Copilot action · Low | Copilot action instructions (commit, review, test) |
 | **Agent Personas** | Prompt `agent:` frontmatter | Loaded with prompt execution · Medium | Shared tool/instruction configs for prompt workflows |
+| **Instruction Hooks** | Automatic | Auto on Copilot action · Low | Shape generated content (commit msgs, reviews, tests) |
+| **Agent Lifecycle Hooks** | Automatic | Auto on agent events · Low | Guardrails and gates (safety guard, pre-commit, session logging) |
 | **Instructions** | Auto-loaded | Auto on file match · Medium | Static rules by file pattern |
 | **Config** | Referenced | On-demand · Low | Central settings |
 
-> **Prompts vs Skills**: Prompts use `.prompt.md` files with frontmatter fields like `description`, `agent`, and `model` for multi-step interactive workflows. Skills use the `SKILL.md` format in `.github/skills/{name}/` directories — self-contained packages with `name`/`description` frontmatter and optional `references/` for templates. Hooks are VS Code Copilot settings in `.vscode/settings.json` that apply automatically.
+> **Prompts vs Skills**: Prompts use `.prompt.md` files with frontmatter for multi-step interactive workflows. Skills use `SKILL.md` in `.github/skills/{name}/` directories — self-contained packages with optional `references/` for templates. Instruction hooks live in `.vscode/settings.json` and shape Copilot-generated content. Agent lifecycle hooks live in `.github/hooks/` and run shell scripts on events like `sessionStart` and `preToolUse`.
 
 ## Workflow Selection
 
@@ -184,7 +200,7 @@ flowchart TD
     Q3 --> |E2E| LF
     
     SF --> IMPL([Implement])
-    LF --> RES["@mslearn-research"] --> PLAN["@mslearn-planning"] --> IMPL
+    LF --> RES["/research-codebase"] --> PLAN["/create-plan"] --> IMPL
     PF --> RES
     
     IMPL --> DONE{Done?}
@@ -200,21 +216,21 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant R as @mslearn-research
-    participant P as @mslearn-planning
-    participant I as @mslearn-implementation
+    participant R as /research-codebase
+    participant P as /create-plan
+    participant I as /implement-plan
     participant A as Artifacts
     
-    U->>R: @mslearn-research [topic]
+    U->>R: /research-codebase [topic]
     R->>A: Creates research/*.md
     R-->>U: ⏸️ PAUSED - Review artifact
     
-    U->>P: @mslearn-planning [from research]
+    U->>P: /create-plan [from research]
     P->>A: Reads research/*.md
     P->>A: Creates plans/*.md
     P-->>U: ⏸️ PAUSED - Review plan
     
-    U->>I: @mslearn-implementation [phase]
+    U->>I: /implement-plan [phase]
     I->>A: Reads plans/*.md
     I->>I: Modifies codebase
     I-->>U: Phase complete
@@ -229,7 +245,7 @@ copilot-config/
 ├── .github/
 │   ├── config/
 │   │   └── workflow-config.json # Central configuration
-│   ├── agents/                  # Autonomous agents (loaded by vscode-extension)
+│   ├── agents/                  # Agent personas (referenced via prompt agent: frontmatter)
 │   ├── prompts/                 # User-invoked workflows
 │   │   ├── mslearn-small-feature.prompt.md
 │   │   ├── mslearn-large-feature.prompt.md
@@ -249,13 +265,17 @@ copilot-config/
 │   │   ├── mslearn-prune-worktree.prompt.md
 │   │   └── mslearn-create-worktree.prompt.md
 │   ├── skills/                  # Self-contained single-purpose actions
-│   │   ├── create-ado-workitems/   # SKILL.md + references/templates.md
 │   │   ├── assign-swe/            # SKILL.md
+│   │   ├── create-ado-workitems/   # SKILL.md + references/templates.md
 │   │   ├── create-handoff/        # SKILL.md + references/template.md
 │   │   ├── create-worktree/       # SKILL.md
 │   │   ├── explain-pr/            # SKILL.md + references/template.md
 │   │   ├── pre-commit/            # SKILL.md
-│   │   └── prune-worktree/        # SKILL.md
+│   │   ├── prune-worktree/        # SKILL.md
+│   │   └── session-learnings/     # SKILL.md + references/template.md
+│   ├── hooks/                   # Agent lifecycle hooks
+│   │   ├── copilot-agent-hooks.json  # Hook config
+│   │   └── scripts/                  # Shell scripts for hooks
 │   └── instructions/            # Auto-loaded rules
 │       └── azure-devops-workitems.instructions.md
 ├── .vscode/
@@ -336,13 +356,25 @@ Two-layer config: `.env` for personal settings, `workflow-config.json` for share
 | `pre-commit` | `.github/skills/pre-commit/` | Run quality gate checks |
 | `prune-worktree` | `.github/skills/prune-worktree/` | Remove worktrees and workspace files |
 
-### Hooks (automatic, configured in `.vscode/settings.json`)
+### Hooks
+
+#### Instruction Hooks (`.vscode/settings.json`)
 
 | Hook | Trigger | What It Does |
 | ---- | ------- | ------------ |
 | Commit message generation | Copilot generates commit message | Enforces conventional commits format |
 | Code review instructions | Copilot reviews code | Applies Learn platform standards |
 | Test generation instructions | Copilot generates tests | Applies Jest/TypeScript conventions |
+
+#### Agent Lifecycle Hooks (`.github/hooks/`)
+
+| Hook | Event | Script | What It Does |
+| ---- | ----- | ------ | ------------ |
+| Safety guard | `preToolUse` | `safety-guard.sh/ps1` | Blocks destructive commands, force pushes to protected branches, edits to CI/CD configs |
+| Pre-commit gate | `preToolUse` | `pre-commit-gate.sh/ps1` | Runs repo-specific quality checks before `git commit` |
+| Session start | `sessionStart` | `setup-node.sh` | Installs Node.js/npm in SWE agent containers |
+| Session logging | `sessionStart` | `session-start-log.sh` | Logs session metadata for diagnostics |
+| Session end | `sessionEnd` | `session-end-learnings.sh/ps1` | Writes marker for learnings extraction |
 
 ### Agents
 
