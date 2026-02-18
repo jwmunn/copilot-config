@@ -15,7 +15,7 @@ When this command is invoked:
 1. **If the path to a handoff document was provided**:
    - If a handoff document path was provided as a parameter, skip the default message
    - Immediately read the handoff document FULLY
-   - Immediately read any research or plan documents that it links to under `copilot-config/agent-artifacts/plans` or `copilot-config/agent-artifacts/research`. do NOT use a sub-agent to read these critical files.
+   - Immediately read any research or plan documents that it links to under `copilot-config/agent-artifacts/plans` or `copilot-config/agent-artifacts/research`. Read these critical files directly in main context.
    - Begin the analysis process by ingesting relevant context from the handoff document, reading additional files it mentions
    - Then propose a course of action to the user and confirm, or ask for clarification on direction.
 
@@ -27,7 +27,7 @@ When this command is invoked:
    - **If there is only one file**: proceed with that handoff
    - **If there are multiple files**: using the date and time in the filename (`YYYY-MM-DD_HH-MM-SS`), proceed with the _most recent_ handoff.
    - Immediately read the handoff document FULLY
-   - Immediately read any research or plan documents that it links to under `copilot-config/agent-artifacts/plans` or `copilot-config/agent-artifacts/research`; do NOT use a sub-agent to read these critical files.
+   - Immediately read any research or plan documents that it links to under `copilot-config/agent-artifacts/plans` or `copilot-config/agent-artifacts/research`; read these critical files directly in main context.
    - Begin the analysis process by ingesting relevant context from the handoff document, reading additional files it mentions
    - Then propose a course of action to the user and confirm, or ask for clarification on direction.
 

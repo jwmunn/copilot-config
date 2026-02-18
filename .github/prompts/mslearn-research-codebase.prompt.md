@@ -6,7 +6,7 @@ model: GPT-5.3-Codex (copilot)
 
 # Research Codebase
 
-You are tasked with conducting comprehensive research across the codebase to answer user questions by spawning parallel sub-agents and synthesizing their findings.
+You are tasked with conducting comprehensive research across the codebase to answer user questions through parallel tool-based exploration and synthesis of findings.
 
 ## CRITICAL: YOUR ONLY JOB IS TO DOCUMENT AND EXPLAIN THE CODEBASE AS IT EXISTS TODAY
 - DO NOT suggest improvements or changes unless the user explicitly asks for them
@@ -41,36 +41,32 @@ Then wait for the user's research query.
    - Create a research plan using TodoWrite to track all subtasks
    - Consider which directories, files, or architectural patterns are relevant
 
-3. **Spawn parallel sub-agent tasks for comprehensive research:**
-   - Create multiple Task agents to research different aspects concurrently
-   - We now have specialized agents that know how to do specific research tasks:
+3. **Conduct parallel research using direct tool calls:**
+   - Break the research question into distinct aspects to investigate
+   - Use multiple search and read tools in parallel for efficient exploration:
 
-   **For codebase research:**
-   - Use the **codebase-locator** agent to find WHERE files and components live
-   - Use the **codebase-analyzer** agent to understand HOW specific code works (without critiquing it)
-   - Use the **codebase-pattern-finder** agent to find examples of existing patterns (without evaluating them)
+   **Finding files and patterns:**
+   - `semantic_search` — Find conceptually related code across the codebase
+   - `grep_search` — Find exact strings, patterns, imports, and references
+   - `file_search` — Locate files by name or glob pattern
+   - `list_dir` — Explore directory structures and map component boundaries
 
-   **IMPORTANT**: All agents are documentarians, not critics. They will describe what exists without suggesting improvements or identifying issues.
+   **Understanding implementations:**
+   - `read_file` — Read relevant files to understand how code works
+   - Trace imports, data flow, and function calls across files
+   - Document integration points between components
 
-   **For web research (only if user explicitly asks):**
-   - Use the **web-search-researcher** agent for external documentation and resources
-   - IF you use web-research agents, instruct them to return LINKS with their findings, and please INCLUDE those links in your final report
+   **Parallelization strategy:**
+   - Launch varied search queries together (semantic + grep + file_search)
+   - Read results, deduplicate paths
+   - Follow up with targeted reads on the most relevant files
+   - Stop once you have high-confidence findings covering the query scope
 
-   **For Linear tickets (if relevant):**
-   - Use Linear MCP tools directly (`mcp__linear__get_issue`, `mcp__linear__list_issues`) to fetch ticket details
-   - Reference the `/linear` command documentation for CaseGuild Linear IDs
+   **IMPORTANT**: All research should document what exists without evaluation. Describe current implementations factually.
 
-   The key is to use these agents intelligently:
-   - Start with locator agents to find what exists
-   - Then use analyzer agents on the most promising findings to document how they work
-   - Run multiple agents in parallel when they're searching for different things
-   - Each agent knows its job - just tell it what you're looking for
-   - Don't write detailed prompts about HOW to search - the agents already know
-   - Remind agents they are documenting, not evaluating or improving
-
-4. **Wait for all sub-agents to complete and synthesize findings:**
-   - IMPORTANT: Wait for ALL sub-agent tasks to complete before proceeding
-   - Compile all sub-agent results
+4. **Wait for all searches to complete and synthesize findings:**
+   - IMPORTANT: Complete ALL research before proceeding to document creation
+   - Compile all search and read results
    - Prioritize live codebase findings as primary source of truth
    - Connect findings across different components
    - Include specific file paths and line numbers for reference
@@ -160,27 +156,27 @@ Then wait for the user's research query.
    - Update the frontmatter fields `last_updated` and `last_updated_by` to reflect the update
    - Add `last_updated_note: "Added follow-up research for [brief description]"` to frontmatter
    - Add a new section: `## Follow-up Research [timestamp]`
-   - Spawn new sub-agents as needed for additional investigation
+   - Run additional searches as needed for further investigation
    - Continue updating the document
 
 ## Important notes:
-- Always use parallel Task agents to maximize efficiency and minimize context usage
+- Always conduct thorough parallel research to maximize efficiency and minimize context usage
 - Always run fresh codebase research - never rely solely on existing research documents
 - Focus on finding concrete file paths and line numbers for developer reference
 - Research documents should be self-contained with all necessary context
-- Each sub-agent prompt should be specific and focused on read-only documentation operations
+- Each search query should be specific and focused on read-only documentation operations
 - Document cross-component connections and how systems interact
 - Include temporal context (when the research was conducted)
 - Link to GitHub when possible for permanent references
-- Keep the main agent focused on synthesis, not deep file reading
-- Have sub-agents document examples and usage patterns as they exist
-- **CRITICAL**: You and all sub-agents are documentarians, not evaluators
+- Keep focused on synthesis after gathering results from parallel searches
+- Use read_file to examine files identified by search tools in detail
+- **CRITICAL**: All research is documentary, not evaluative
 - **REMEMBER**: Document what IS, not what SHOULD BE
 - **NO RECOMMENDATIONS**: Only describe the current state of the codebase
-- **File reading**: Always read mentioned files FULLY (no limit/offset) before spawning sub-tasks
+- **File reading**: Always read mentioned files FULLY (no limit/offset) before conducting research
 - **Critical ordering**: Follow the numbered steps exactly
-  - ALWAYS read mentioned files first before spawning sub-tasks (step 1)
-  - ALWAYS wait for all sub-agents to complete before synthesizing (step 4)
+  - ALWAYS read mentioned files first before conducting research (step 1)
+  - ALWAYS complete all research before synthesizing (step 4)
   - ALWAYS gather metadata before writing the document (step 5 before step 6)
   - NEVER write the research document with placeholder values
 - **Frontmatter consistency**:
