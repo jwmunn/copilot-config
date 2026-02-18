@@ -4,6 +4,13 @@
     "sessionStart": [
       {
         "type": "command",
+        "bash": ".github/hooks/scripts/setup-node.sh",
+        "cwd": ".",
+        "timeoutSec": 120,
+        "comment": "Install Node.js/npm and dependencies for SWE agent (container has no Node.js)"
+      },
+      {
+        "type": "command",
         "bash": ".github/hooks/scripts/session-start-log.sh",
         "cwd": ".",
         "timeoutSec": 10,
