@@ -110,12 +110,12 @@ Our prompts implement several of Anthropic's documented workflow patterns:
 
 ### Prompts (`/command`) — Workflows with predefined steps
 
-Use prompts when:**
+**Use prompts when:**
 
 - The task has a **known sequence of steps** that can be defined in advance
 - The workflow needs access to the **user's chat context**
 - The process benefits from **interactive human feedback** during execution
-- You're **orchestrating** other tools, skills, or sub-agents
+- You're **orchestrating** other tools and skills
 
 **Current prompts fall into two categories:**
 

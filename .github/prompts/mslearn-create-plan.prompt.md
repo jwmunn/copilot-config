@@ -120,9 +120,9 @@ After getting initial clarifications:
    - Returns specific file:line references
    - Finds tests and examples
 
-3. **Wait for ALL research to complete** before proceeding
+4. **Wait for ALL research to complete** before proceeding
 
-4. **Present findings and design options**:
+5. **Present findings and design options**:
    ```
    Based on my research, here's what I found:
 
