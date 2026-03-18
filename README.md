@@ -103,6 +103,67 @@ The workflow configuration uses environment variables to avoid storing personal 
 
 The workflow configuration in `.github/config/workflow-config.json` uses `${VAR_NAME}` placeholders that resolve from your `.env` file.
 
+## Claude Code with GitHub Copilot (Proxy)
+
+Use your GitHub Copilot Enterprise license as the backend for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) — no separate Anthropic API key needed.
+
+> **Prerequisite**: Your GitHub account must be linked to Microsoft Enterprise. If not, [link it first](https://repos.opensource.microsoft.com/link).
+
+### Quick Start
+
+1. **Start the proxy** (in a separate terminal):
+   ```bash
+   npx copilot-api@latest start
+   ```
+   First run opens a browser for GitHub OAuth. The proxy listens on `http://localhost:4141`.
+
+2. **Run Claude Code** (in another terminal):
+   ```bash
+   ANTHROPIC_BASE_URL=http://localhost:4141 claude
+   ```
+
+### Recommended: Use `--claude-code` Mode
+
+The `--claude-code` flag provides an interactive model picker and generates the correct launch command:
+
+```bash
+npx copilot-api@latest start --claude-code
+```
+
+### Shell Alias (Permanent Setup)
+
+Add to `~/.zshrc`, `~/.bashrc`, or your PowerShell profile:
+
+```bash
+# bash/zsh
+alias claude-copilot='ANTHROPIC_BASE_URL=http://localhost:4141 claude'
+```
+
+```powershell
+# PowerShell ($PROFILE)
+function claude-copilot { $env:ANTHROPIC_BASE_URL="http://localhost:4141"; claude @args }
+```
+
+### Proxy Options
+
+| Flag | Description |
+|------|-------------|
+| `-p, --port` | Port to listen on (default: `4141`) |
+| `-c, --claude-code` | Interactive model picker for Claude Code |
+| `-v, --verbose` | Enable verbose logging |
+| `-r, --rate-limit` | Rate limit in seconds between requests |
+| `-w, --wait` | Wait instead of error when rate limit is hit |
+| `--proxy-env` | Initialize proxy from environment variables |
+
+### Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| `EADDRINUSE: address already in use :::4141` | A previous proxy is still running. Kill it: `netstat -ano \| grep 4141` to find the PID, then `taskkill /PID <pid> /F` (Windows) or `kill <pid>` (macOS/Linux). Or use `--port 4142` to pick a different port. |
+| `--account-type=enterprise` hangs on startup | Omit it — the proxy auto-detects your enterprise license from the GitHub OAuth token. |
+| Browser doesn't open for auth | Run `npx copilot-api@latest auth` first to complete OAuth separately, then start the proxy. |
+| Need to re-authenticate | Run `npx copilot-api@latest auth` to refresh your GitHub token. |
+
 ## System Architecture
 
 ```mermaid
