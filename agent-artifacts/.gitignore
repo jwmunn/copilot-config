@@ -14,5 +14,8 @@ handoffs/*
 reviews/*
 !reviews/.gitkeep
 
+jobs/*
+!jobs/.gitkeep
+
 learnings/*
 !learnings/.gitkeep

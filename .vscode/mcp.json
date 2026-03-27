@@ -1,16 +1,12 @@
 {
-	"inputs": [
-		{
-			"id": "ado_org",
-			"type": "promptString",
-			"description": "Azure DevOps organization name (e.g. 'ceapex')",
-			"default": "ceapex"
-		}
-	],
 	"servers": {
 		"playwright": {
 			"command": "npx",
-			"args": ["-y", "@playwright/mcp@latest"]
+			"args": [
+				"-y",
+				"@playwright/mcp@latest"
+			],
+			"type": "stdio"
 		},
 		"ado": {
 			"type": "stdio",
@@ -35,11 +31,41 @@
 		},
 		"azure": {
 			"command": "npx",
-			"args": ["-y", "@azure/mcp@latest", "server", "start"]
+			"args": [
+				"-y",
+				"@azure/mcp@latest",
+				"server",
+				"start"
+			],
+			"type": "stdio"
 		},
 		"workiq": {
 			"command": "npx",
-			"args": ["-y", "@microsoft/workiq", "mcp"]
+			"args": [
+				"-y",
+				"@microsoft/workiq",
+				"mcp"
+			],
+			"type": "stdio"
+		},
+		"microsoft/devbox-mcp-server": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"@microsoft/devbox-mcp@latest",
+				"@microsoft/devbox-mcp@latest"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
 		}
-	}
+	},
+	"inputs": [
+		{
+			"id": "ado_org",
+			"type": "promptString",
+			"description": "Azure DevOps organization name (e.g. 'ceapex')",
+			"default": "ceapex"
+		}
+	]
 }

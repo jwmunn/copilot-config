@@ -404,6 +404,8 @@ Two-layer config: `.env` for personal settings, `workflow-config.json` for share
 | `/mslearn-pre-commit` | Run repository quality checks |
 | `/mslearn-prune-worktree` | Remove worktrees and clean up resources |
 | `/mslearn-create-worktree` | Create worktree with auth, deps, and agent symlinks |
+| `/mslearn-delegate-devbox` | Delegate task to Dev Box for unattended execution |
+| `/mslearn-devbox-status` | Check status of a Dev Box delegated job |
 
 ### Skills (self-contained SKILL.md packages in `.github/skills/`)
 
@@ -416,6 +418,7 @@ Two-layer config: `.env` for personal settings, `workflow-config.json` for share
 | `explain-pr` | `.github/skills/explain-pr/` | Generate PR explanation document |
 | `pre-commit` | `.github/skills/pre-commit/` | Run quality gate checks |
 | `prune-worktree` | `.github/skills/prune-worktree/` | Remove worktrees and workspace files |
+| `delegate-devbox` | `.github/skills/delegate-devbox/` | Delegate task to Dev Box for unattended execution |
 
 ### Hooks
 

@@ -429,6 +429,51 @@ User: /mslearn-prune-worktree
 
 ---
 
+### 8. Dev Box Delegation Workflow
+
+**Use when**: You want work to continue running while you are away from your machine. Delegates a task to a remote Dev Box that implements, validates, pushes, and creates a PR autonomously.
+
+```
+/mslearn-delegate-devbox
+
+"Implement the rating component in Learn.SharedComponents following the pattern
+in LearnArticle. Add tests and export from index.ts. Ticket CAS-456."
+```
+
+**Flow**:
+1. Collect parameters (repo, task prompt, branch, ticket)
+2. Create structured job artifact locally in `agent-artifacts/jobs/` (gitignored)
+3. Start Dev Box via MCP if not already running
+4. Delay/skip auto-shutdown schedule
+5. Write job artifact to Dev Box via MCP (`Run Tasks On Dev Box`)
+6. Launch bootstrap script as detached process on Dev Box
+7. Record local job status and confirm submission
+
+**Remote execution** (runs independently on Dev Box):
+1. Fetch repo and create working branch
+2. Implement task via Copilot coding agent
+3. Run repo-specific validation (`preCommitCommand`)
+4. Commit, push, and create ADO PR
+5. Write completion handoff locally on Dev Box (gitignored)
+
+**Check status**:
+```
+/mslearn-devbox-status CAS-456
+
+→ Status: completed
+→ PR: https://dev.azure.com/ceapex/Engineering/_git/Learn.SharedComponents/pullrequest/1234
+→ Branch: jumunn/devbox-rating-component
+→ Resume: /mslearn-resume-handoff {handoff-path}
+```
+
+**Prerequisites**:
+- Dev Box MCP installed in workspace (`.vscode/mcp.json`)
+- Dev Box has ADO auth, repos cloned, and toolchains installed
+- `devBox` section configured in `workflow-config.json`
+- `.env` contains `DEVBOX_PROJECT`, `DEVBOX_NAME`, `DEVBOX_REPO_BASE_PATH`, `DEVBOX_ARTIFACT_SYNC_PATH`
+
+---
+
 ## Skills
 
 Skills are self-contained, single-purpose action packages using the `SKILL.md` format. Each skill lives in `.github/skills/{name}/` with a `SKILL.md` file (containing `name` and `description` frontmatter) and optional `references/` for templates and domain knowledge.
@@ -482,6 +527,22 @@ Explain what was done in this PR branch
 ```
 
 Creates a research-style document explaining all changes, architectural decisions, and pattern references. Saves to `agent-artifacts/reviews/`.
+
+### Delegate to Dev Box
+
+Skill: `.github/skills/delegate-devbox/`
+
+Delegate a task to a remote Dev Box for unattended execution:
+
+```
+Delegate to devbox: Implement the rating component in Learn.SharedComponents
+Ticket: CAS-456
+```
+
+Packages the task as a job artifact, starts the Dev Box, and launches a bootstrap script that implements the task, validates, pushes, and creates an ADO PR. Includes:
+- Job artifact template in `references/job-template.md`
+- Bootstrap runner in `references/run-devbox-job.ps1`
+- Status tracking via `-status.json` sidecar files
 
 ### Pre-Commit Check
 

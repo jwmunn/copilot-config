@@ -11,6 +11,8 @@
   },
 
   "azureDevOps": {
+    "domain": "${ADO_DOMAIN}",
+    "orgName": "${ADO_ORG_NAME}",
     "organization": "${ADO_ORGANIZATION}",
     "project": "${ADO_PROJECT}",
     "areaPath": "{adoAreaPath}",
@@ -86,15 +88,25 @@
       "plans": "plans",
       "handoffs": "handoffs",
       "reviews": "reviews",
-      "learnings": "learnings"
+      "learnings": "learnings",
+      "jobs": "jobs"
     },
     "filenamePatterns": {
       "research": "{date}-{ticketId}-{description}.md",
       "plan": "{date}-{ticketId}-{description}-plan.md",
       "handoff": "{date}_{time}_{ticketId}_{description}.md",
       "review": "{date}-{prNumber}-{description}-review.md",
-      "learnings": "{date}-{description}-learnings.md"
+      "learnings": "{date}-{description}-learnings.md",
+      "job": "{date}_{time}_{ticketId}_{description}-job.md"
     }
+  },
+
+  "devBox": {
+    "project": "${DEVBOX_PROJECT}",
+    "name": "${DEVBOX_NAME}",
+    "userId": "me",
+    "repoBasePath": "${DEVBOX_REPO_BASE_PATH}",
+    "cloneUrlPattern": "https://${ADO_ORG_NAME}@${ADO_DOMAIN}/${ADO_ORG_NAME}/${ADO_PROJECT}/_git/{repoName}"
   },
 
   "qualityGates": {
