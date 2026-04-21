@@ -20,52 +20,88 @@ GitHub Copilot workflow automation for Microsoft Learn platform development.
 
 ## Multi-Repo Workspace Setup
 
-Agents are discovered from `.github/agents/` relative to your **active file's repo**. Run the setup script once after cloning to make agents available from all sibling repos:
+This repo provides assets for **two Copilot surfaces**:
+
+| Surface | Loads | Setup script |
+|---|---|---|
+| **Copilot CLI** | `.github/skills/` (auto-loaded from `~/.copilot/skills/`) | `setup-global.ps1` |
+| **VS Code Copilot Chat** | `.github/{prompts,instructions,agents}/` (per-repo) | `setup-agents.ps1` |
+
+Skills and prompts are kept in lockstep by `migrate-prompts-to-skills.ps1` — every `mslearn-*.prompt.md` has a matching `mslearn-*` skill folder.
 
 ### One-Time Setup
 
 ```powershell
-# Windows (PowerShell)
-.\setup-agents.ps1
+# 1. Make ALL mslearn skills available globally in Copilot CLI
+.\setup-global.ps1
 
-# macOS/Linux
+# 2. Link prompts/instructions/agents into every sibling repo for VS Code
+.\setup-agents.ps1
+```
+
+```bash
+# macOS/Linux equivalent (skills only - no CLI sym-link script yet)
 ./setup-agents.sh
 ```
 
-This auto-discovers sibling repos and creates junctions/symlinks to copilot-config's agents folder.
+After running both, in any Copilot CLI session you'll see all `mslearn-*` skills in `/env`, and in any VS Code session inside a sibling repo you'll see `/mslearn-*` slash commands.
 
 ### Options
 
-```bash
-# Preview changes without applying
-./setup-agents.sh --dry-run
+```powershell
+# Preview without applying
+.\setup-global.ps1 -DryRun
+.\setup-agents.ps1 -DryRun
 
 # Link specific repos only
-./setup-agents.sh docs-ui feature-gap-wt
+.\setup-agents.ps1 -TargetRepos docs-ui, Learn.SharedComponents
 
-# Replace existing agents folders
-./setup-agents.sh --force
+# Restrict which assets get linked (default: all three)
+.\setup-agents.ps1 -Assets prompts, instructions
+
+# Replace existing folders (will delete their contents!)
+.\setup-agents.ps1 -Force
+.\setup-global.ps1 -Force
 ```
+
+### Keeping Skills In Sync With Prompts
+
+When you add or modify a prompt in `.github/prompts/`, regenerate the matching skill:
+
+```powershell
+.\migrate-prompts-to-skills.ps1            # idempotent; preview with -DryRun
+.\setup-global.ps1                         # link any newly-created skills
+```
+
+The migration script:
+- Renames legacy un-prefixed skill folders to `mslearn-<name>`
+- Creates `SKILL.md` from any `mslearn-*.prompt.md` lacking a matching skill
+- Strips VS-Code-only frontmatter (`agent:`, `model:`) on conversion
+- Leaves originals in `.github/prompts/` untouched
 
 ### Manual Setup
 
-If you prefer manual setup or need to add repos in different locations:
+If you prefer manual setup or have repos in non-standard locations:
 
 ```powershell
 # Windows (PowerShell) - Junction (no admin required)
-New-Item -ItemType Junction -Path "{TARGET_REPO}\.github\agents" -Target "c:\repos\mslearn\copilot-config\.github\agents"
+New-Item -ItemType Junction -Path "{TARGET_REPO}\.github\agents" -Target "C:\repos\mslearn\copilot-config\.github\agents"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.copilot\skills\mslearn-ship-it" -Target "C:\repos\mslearn\copilot-config\.github\skills\mslearn-ship-it"
 ```
 
 ```bash
 # macOS/Linux - Symlink
 ln -s /path/to/copilot-config/.github/agents {TARGET_REPO}/.github/agents
+ln -s /path/to/copilot-config/.github/skills/mslearn-ship-it ~/.copilot/skills/mslearn-ship-it
 ```
 
 ### Notes
 
-- **Junctions/symlinks are local** - each developer runs setup once
-- If target repo has existing agents, use `--force` to replace or manually merge
-- Agents have **full access to all repos** in the workspace regardless of discovery location
+- **Junctions/symlinks are local** — each developer runs setup once. Edits to source files are reflected immediately; no resync needed.
+- **Restart any active Copilot session** after setup to pick up new skills.
+- If a target repo has existing prompts/instructions, `setup-agents.ps1` skips them (use `-Force` to replace or merge manually).
+- Agents have **full access to all repos** in the workspace regardless of discovery location.
+- **CLI invocation differs from VS Code:** CLI skills aren't typed as `/mslearn-ship-it` — describe your intent (e.g., "ship this") and the agent picks the matching skill from its description. VS Code still uses explicit `/mslearn-ship-it` slash commands.
 
 ## Environment Configuration
 
@@ -325,15 +361,27 @@ copilot-config/
 │   │   ├── mslearn-pre-commit.prompt.md
 │   │   ├── mslearn-prune-worktree.prompt.md
 │   │   └── mslearn-create-worktree.prompt.md
-│   ├── skills/                  # Self-contained single-purpose actions
-│   │   ├── assign-swe/            # SKILL.md
-│   │   ├── create-ado-workitems/   # SKILL.md + references/templates.md
-│   │   ├── create-handoff/        # SKILL.md + references/template.md
-│   │   ├── create-worktree/       # SKILL.md
-│   │   ├── explain-pr/            # SKILL.md + references/template.md
-│   │   ├── pre-commit/            # SKILL.md
-│   │   ├── prune-worktree/        # SKILL.md
-│   │   └── session-learnings/     # SKILL.md + references/template.md
+│   ├── skills/                  # Self-contained single-purpose actions (CLI-loadable)
+│   │   ├── mslearn-assign-swe/             # SKILL.md
+│   │   ├── mslearn-create-ado-workitems/   # SKILL.md + references/templates.md
+│   │   ├── mslearn-create-handoff/         # SKILL.md + references/template.md
+│   │   ├── mslearn-create-plan/            # SKILL.md
+│   │   ├── mslearn-create-worktree/        # SKILL.md
+│   │   ├── mslearn-delegate-devbox/        # SKILL.md
+│   │   ├── mslearn-devbox-status/          # SKILL.md
+│   │   ├── mslearn-explain-pr/             # SKILL.md + references/template.md
+│   │   ├── mslearn-implement-plan/         # SKILL.md
+│   │   ├── mslearn-large-feature/          # SKILL.md
+│   │   ├── mslearn-parity-feature/         # SKILL.md
+│   │   ├── mslearn-pre-commit/             # SKILL.md
+│   │   ├── mslearn-prune-worktree/         # SKILL.md
+│   │   ├── mslearn-research-codebase/      # SKILL.md
+│   │   ├── mslearn-resume-handoff/         # SKILL.md
+│   │   ├── mslearn-review-it/              # SKILL.md
+│   │   ├── mslearn-session-learnings/      # SKILL.md + references/template.md
+│   │   ├── mslearn-ship-it/                # SKILL.md
+│   │   ├── mslearn-small-feature/          # SKILL.md
+│   │   └── mslearn-update-plan/            # SKILL.md
 │   ├── hooks/                   # Agent lifecycle hooks
 │   │   ├── copilot-agent-hooks.json  # Hook config
 │   │   └── scripts/                  # Shell scripts for hooks
@@ -405,17 +453,32 @@ Two-layer config: `.env` for personal settings, `workflow-config.json` for share
 | `/mslearn-prune-worktree` | Remove worktrees and clean up resources |
 | `/mslearn-create-worktree` | Create worktree with auth, deps, and agent symlinks |
 
-### Skills (self-contained SKILL.md packages in `.github/skills/`)
+### Skills (CLI-loadable; SKILL.md packages in `.github/skills/`)
 
-| Skill | Location | Description |
-| ----- | -------- | ----------- |
-| `create-ado-workitems` | `.github/skills/create-ado-workitems/` | Create ADO items from plan |
-| `assign-swe` | `.github/skills/assign-swe/` | Assign GitHub SWE to work item |
-| `create-handoff` | `.github/skills/create-handoff/` | Save session context for later |
-| `create-worktree` | `.github/skills/create-worktree/` | Create worktree with auth and npm install |
-| `explain-pr` | `.github/skills/explain-pr/` | Generate PR explanation document |
-| `pre-commit` | `.github/skills/pre-commit/` | Run quality gate checks |
-| `prune-worktree` | `.github/skills/prune-worktree/` | Remove worktrees and workspace files |
+Each prompt has a matching `mslearn-*` skillso workflows are discoverable in Copilot CLI (which doesn't load `.prompt.md`). In CLI, the agent picks a skill based on your phrasing — no slash command needed.
+
+| Skill | Description |
+| ----- | ----------- |
+| `mslearn-assign-swe` | Assign GitHub SWE to work item |
+| `mslearn-create-ado-workitems` | Create ADO items from plan |
+| `mslearn-create-handoff` | Save session context for later |
+| `mslearn-create-plan` | Create detailed implementation plan |
+| `mslearn-create-worktree` | Create worktree with auth and npm install |
+| `mslearn-delegate-devbox` | Delegate task to Dev Box for unattended execution |
+| `mslearn-devbox-status` | Check status of a Dev Box delegated job |
+| `mslearn-explain-pr` | Generate PR explanation document |
+| `mslearn-implement-plan` | Execute plan phases with verification |
+| `mslearn-large-feature` | Complex multi-repo feature workflow |
+| `mslearn-parity-feature` | Port feature between repos |
+| `mslearn-pre-commit` | Run quality gate checks |
+| `mslearn-prune-worktree` | Remove worktrees and workspace files |
+| `mslearn-research-codebase` | Document codebase without evaluation |
+| `mslearn-resume-handoff` | Resume from handoff document |
+| `mslearn-review-it` | Review PR branch |
+| `mslearn-session-learnings` | Capture session learnings as self-healing patches |
+| `mslearn-ship-it` | Commit, push, create PR with template |
+| `mslearn-small-feature` | Quick feature implementation |
+| `mslearn-update-plan` | Sync plan with codebase status |
 
 ### Hooks
 

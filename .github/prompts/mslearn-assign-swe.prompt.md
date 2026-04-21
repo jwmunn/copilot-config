@@ -10,7 +10,7 @@ Assign GitHub Copilot Workspace Agent (SWE) to Azure DevOps work items with stru
 
 ## Instructions
 
-Follow the skill instructions in `copilot-config/.github/skills/assign-swe/SKILL.md`.
+Follow the skill instructions in `copilot-config/.github/skills/mslearn-assign-swe/SKILL.md`.
 
 ## Workflow
 

@@ -10,7 +10,7 @@ Create a new git worktree for isolated branch development, fully set up with aut
 
 ## Instructions
 
-Follow the skill instructions in `copilot-config/.github/skills/create-worktree/SKILL.md`.
+Follow the skill instructions in `copilot-config/.github/skills/mslearn-create-worktree/SKILL.md`.
 
 ## Workflow
 
