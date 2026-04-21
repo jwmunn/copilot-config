@@ -10,7 +10,7 @@ Generate comprehensive documentation explaining what was done in a PR branch —
 
 ## Instructions
 
-Follow the skill instructions in `copilot-config/.github/skills/explain-pr/SKILL.md`.
+Follow the skill instructions in `copilot-config/.github/skills/mslearn-explain-pr/SKILL.md`.
 
 ## Workflow
 

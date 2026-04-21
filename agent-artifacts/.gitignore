@@ -16,3 +16,6 @@ reviews/*
 
 learnings/*
 !learnings/.gitkeep
+
+jobs/*
+!jobs/.gitkeep

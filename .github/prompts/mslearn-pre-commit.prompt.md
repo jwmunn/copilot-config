@@ -10,7 +10,7 @@ Run repository-specific quality checks before committing to catch build, type, l
 
 ## Instructions
 
-Follow the skill instructions in `copilot-config/.github/skills/pre-commit/SKILL.md`.
+Follow the skill instructions in `copilot-config/.github/skills/mslearn-pre-commit/SKILL.md`.
 
 ## Workflow
 

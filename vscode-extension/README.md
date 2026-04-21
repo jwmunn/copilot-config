@@ -80,11 +80,11 @@ Skills are self-contained packages in `.github/skills/{name}/` with a `SKILL.md`
 
 | Skill | Location | Purpose |
 |-------|----------|--------|
-| `create-ado-workitems` | `.github/skills/create-ado-workitems/` | Create ADO work items from plan |
-| `assign-swe` | `.github/skills/assign-swe/` | Assign GitHub SWE to work item |
-| `create-handoff` | `.github/skills/create-handoff/` | Create session handoff document |
-| `explain-pr` | `.github/skills/explain-pr/` | Generate PR explanation document |
-| `pre-commit` | `.github/skills/pre-commit/` | Run quality gate checks |
+| `create-ado-workitems` | `.github/skills/mslearn-create-ado-workitems/` | Create ADO work items from plan |
+| `assign-swe` | `.github/skills/mslearn-assign-swe/` | Assign GitHub SWE to work item |
+| `create-handoff` | `.github/skills/mslearn-create-handoff/` | Create session handoff document |
+| `explain-pr` | `.github/skills/mslearn-explain-pr/` | Generate PR explanation document |
+| `pre-commit` | `.github/skills/mslearn-pre-commit/` | Run quality gate checks |
 
 Each skill may include a `references/` directory with templates and domain knowledge.
 

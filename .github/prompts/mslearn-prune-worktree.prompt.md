@@ -10,7 +10,7 @@ Clean up one or more git worktrees and their associated resources.
 
 ## Instructions
 
-Follow the skill instructions in `copilot-config/.github/skills/prune-worktree/SKILL.md`.
+Follow the skill instructions in `copilot-config/.github/skills/mslearn-prune-worktree/SKILL.md`.
 
 ## Workflow
 

@@ -435,7 +435,7 @@ Skills are self-contained, single-purpose action packages using the `SKILL.md` f
 
 ### Create ADO Work Items
 
-Skill: `.github/skills/create-ado-workitems/`
+Skill: `.github/skills/mslearn-create-ado-workitems/`
 
 ```
 Create ADO work items from plan:
@@ -450,7 +450,7 @@ Creates hierarchical work items from implementation plans:
 
 ### Assign GitHub SWE
 
-Skill: `.github/skills/assign-swe/`
+Skill: `.github/skills/mslearn-assign-swe/`
 
 ```
 Assign SWE to work item 67890
@@ -461,7 +461,7 @@ Assigns GitHub Copilot Workspace Agent to work items suitable for automated impl
 
 ### Create Handoff
 
-Skill: `.github/skills/create-handoff/`
+Skill: `.github/skills/mslearn-create-handoff/`
 
 When stopping work to resume later:
 
@@ -473,7 +473,7 @@ Creates structured handoff document with task status, recent changes, learnings,
 
 ### Explain PR
 
-Skill: `.github/skills/explain-pr/`
+Skill: `.github/skills/mslearn-explain-pr/`
 
 Generate comprehensive documentation of what was done in a PR branch:
 
@@ -483,9 +483,25 @@ Explain what was done in this PR branch
 
 Creates a research-style document explaining all changes, architectural decisions, and pattern references. Saves to `agent-artifacts/reviews/`.
 
+### Delegate to Dev Box
+
+Skill: `.github/skills/mslearn-delegate-devbox/`
+
+Delegate a task to a remote Dev Box for unattended execution:
+
+```
+Delegate to devbox: Implement the rating component in Learn.SharedComponents
+Ticket: CAS-456
+```
+
+Packages the task as a job artifact, starts the Dev Box, and launches a bootstrap script that implements the task, validates, pushes, and creates an ADO PR. Includes:
+- Job artifact template in `references/job-template.md`
+- Bootstrap runner in `references/run-devbox-job.ps1`
+- Status tracking via `-status.json` sidecar files
+
 ### Pre-Commit Check
 
-Skill: `.github/skills/pre-commit/`
+Skill: `.github/skills/mslearn-pre-commit/`
 
 Run repository-specific quality gates manually:
 

@@ -10,11 +10,11 @@ Create a concise handoff document that compacts and summarizes your session cont
 
 ## Instructions
 
-Follow the skill instructions in `copilot-config/.github/skills/create-handoff/SKILL.md`.
+Follow the skill instructions in `copilot-config/.github/skills/mslearn-create-handoff/SKILL.md`.
 
 ## Workflow
 
-1. **Extract session learnings first** — read `copilot-config/.github/skills/session-learnings/SKILL.md` and analyze the session for correction signals. Present any findings and apply approved patches before proceeding.
+1. **Extract session learnings first** — read `copilot-config/.github/skills/mslearn-session-learnings/SKILL.md` and analyze the session for correction signals. Present any findings and apply approved patches before proceeding.
 2. Gather session context: git branch, commit hash, repo, tasks worked on, files changed
 3. Determine output path using ticket number or `general` directory with timestamped filename
 4. Write handoff document with YAML frontmatter, Mermaid diagrams, and structured sections

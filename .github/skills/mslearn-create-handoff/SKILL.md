@@ -20,7 +20,7 @@ Save to `copilot-config/agent-artifacts/handoffs/{ticket-dir}/{filename}.md` whe
 
 Before gathering context, run the session-learnings analysis to capture any self-healing improvements from this session:
 
-1. Read `.github/skills/session-learnings/SKILL.md` and follow its process
+1. Read `.github/skills/mslearn-session-learnings/SKILL.md` and follow its process
 2. Analyze the conversation for correction signals (user fixes, workarounds, repeated explanations)
 3. If learnings are found, present them and ask the user to approve high-confidence patches
 4. Apply approved changes before creating the handoff

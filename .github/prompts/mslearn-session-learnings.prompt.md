@@ -10,18 +10,18 @@ Extract learnings and self-healing improvements from the current session.
 
 ## Instructions
 
-Read the skill definition at `.github/skills/session-learnings/SKILL.md` and follow its process exactly.
+Read the skill definition at `.github/skills/mslearn-session-learnings/SKILL.md` and follow its process exactly.
 
 ## Context
 
 You have access to:
 - The full conversation history from this session
 - All files in `copilot-config/.github/` (agents, prompts, skills, instructions, hooks)
-- The learnings template at `.github/skills/session-learnings/references/template.md`
+- The learnings template at `.github/skills/mslearn-session-learnings/references/template.md`
 
 ## Steps
 
-1. Read `.github/skills/session-learnings/SKILL.md` for detailed instructions
+1. Read `.github/skills/mslearn-session-learnings/SKILL.md` for detailed instructions
 2. Analyze this session's conversation for correction signals
 3. Classify each learning by scope, type, and confidence
 4. Generate concrete patches for the relevant automation files

@@ -10,7 +10,7 @@ Create structured work items in Azure DevOps from an implementation plan, with p
 
 ## Instructions
 
-Follow the skill instructions in `copilot-config/.github/skills/create-ado-workitems/SKILL.md`.
+Follow the skill instructions in `copilot-config/.github/skills/mslearn-create-ado-workitems/SKILL.md`.
 
 ## Workflow
 
