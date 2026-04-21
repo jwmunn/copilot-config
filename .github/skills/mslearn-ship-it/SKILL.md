@@ -124,14 +124,29 @@ gh pr create \
 ```
 
 **For Azure DevOps repos** (`platform: "ado"` or unspecified):
+
+⚠️ **IMPORTANT: Multi-line PR descriptions MUST use a temp file approach.** Passing multi-line markdown directly via `--description` will be mangled by shell escaping (quotes, newlines, special chars get stripped), resulting in a truncated/broken PR description.
+
+**Two-step process:**
+1. Write the filled-in PR description to a temp file first
+2. Create the PR with a short title only, then update the description from the temp file
+
 ```bash
-# Create PR using Azure DevOps CLI
+# Step 1: Write description to a temp file using the create/edit tool (NOT echo/heredoc)
+# Save to session workspace: {session_folder}/files/pr-description.md
+
+# Step 2: Create PR with minimal description
 az repos pr create \
     --repository $REPO_NAME \
     --source-branch $BRANCH \
     --target-branch $DEFAULT_BRANCH \
     --title "{PR title}" \
-    --description-file .azuredevops/pull_request_template.md \
+    --org https://dev.azure.com/ceapex \
+    --project Engineering
+
+# Step 3: Update PR description from file (PowerShell)
+az repos pr update --id {PR_ID} \
+    --description "$(Get-Content '{temp_file_path}' -Raw)" \
     --org https://dev.azure.com/ceapex \
     --project Engineering
 ```
