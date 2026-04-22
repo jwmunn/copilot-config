@@ -125,31 +125,59 @@ gh pr create \
 
 **For Azure DevOps repos** (`platform: "ado"` or unspecified):
 
-⚠️ **IMPORTANT: Multi-line PR descriptions MUST use a temp file approach.** Passing multi-line markdown directly via `--description` will be mangled by shell escaping (quotes, newlines, special chars get stripped), resulting in a truncated/broken PR description.
+⚠️ **CRITICAL: `az repos pr {create,update} --description` silently truncates multi-line content.**
 
-**Two-step process:**
-1. Write the filled-in PR description to a temp file first
-2. Create the PR with a short title only, then update the description from the temp file
+The `az` CLI does not reliably round-trip multi-line markdown through its `--description` argument. This has been confirmed to fail in multiple ways:
 
-```bash
-# Step 1: Write description to a temp file using the create/edit tool (NOT echo/heredoc)
-# Save to session workspace: {session_folder}/files/pr-description.md
+- Passing markdown inline: newlines collapse, heredoc content is mangled, `##` headers are misinterpreted.
+- Passing via PowerShell variable expansion (`--description "$desc"`) or `--description "$(Get-Content file -Raw)"`: the description silently lands as just the first line (or `## Overview` only) with no error emitted.
+- Passing via `--description @file` syntax: also unreliable — can swallow subsequent arguments on the command line.
 
-# Step 2: Create PR with minimal description
-az repos pr create \
-    --repository $REPO_NAME \
-    --source-branch $BRANCH \
-    --target-branch $DEFAULT_BRANCH \
-    --title "{PR title}" \
-    --org https://dev.azure.com/ceapex \
-    --project Engineering
+**Additional constraint:** ADO enforces a **4000-character hard limit** on PR descriptions. Descriptions over this length cause an `InvalidArgumentValueException` error (`"A description for a pull request must not be longer than 4000 characters."`). Measure the description length before the PATCH call and trim if needed.
 
-# Step 3: Update PR description from file (PowerShell)
-az repos pr update --id {PR_ID} \
-    --description "$(Get-Content '{temp_file_path}' -Raw)" \
-    --org https://dev.azure.com/ceapex \
-    --project Engineering
+**Canonical approach — PATCH via the REST API with a JSON body.** This is the only reliable method for multi-line descriptions:
+
+```powershell
+# Step 1: Write the filled-in description to a temp file with the create tool
+# (NOT echo/heredoc). Save to: {session_folder}/files/pr-description.md
+
+# Step 2: Create the PR with a minimal description (or none). `az repos pr
+# create` is OK for short single-line descriptions; use it just to get the PR ID.
+$prJson = az repos pr create `
+    --repository $REPO_NAME `
+    --source-branch $BRANCH `
+    --target-branch $DEFAULT_BRANCH `
+    --title "{PR title}" `
+    --org https://dev.azure.com/ceapex `
+    --project Engineering `
+    --output json | ConvertFrom-Json
+$prId = $prJson.pullRequestId
+
+# Step 3: Read description, verify length, then PATCH via REST.
+$desc = Get-Content '{temp_file_path}' -Raw
+if ($desc.Length -gt 4000) {
+    throw "PR description is $($desc.Length) chars; ADO limit is 4000. Trim the description."
+}
+$body = @{ description = $desc } | ConvertTo-Json -Depth 3
+$token = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
+$headers = @{ Authorization = "Bearer $token"; 'Content-Type' = 'application/json' }
+$resp = Invoke-RestMethod `
+    -Method Patch `
+    -Uri "https://dev.azure.com/ceapex/Engineering/_apis/git/repositories/$REPO_NAME/pullrequests/$prId`?api-version=7.1" `
+    -Headers $headers `
+    -Body $body
+
+# Step 4: VERIFY by checking the length on the server. If it's shorter than
+# what you sent, the description did not round-trip — do NOT assume success.
+if ($resp.description.Length -ne $desc.Length) {
+    throw "Description round-trip failed: sent $($desc.Length) chars, got $($resp.description.Length) back."
+}
+"Updated. Description length on server: $($resp.description.Length) chars"
 ```
+
+**Resource GUID `499b84ac-1321-427f-aa17-267ca6975798`** is the Azure DevOps API resource ID (constant). Do not substitute.
+
+**Always verify round-trip.** After PATCH, compare `$resp.description.Length` to what you sent. The `az` CLI truncation failure mode is silent, and any future regression in the REST path would be too — assume nothing until you've seen the returned length match.
 
 ### Step 6: Populate PR Description
 
